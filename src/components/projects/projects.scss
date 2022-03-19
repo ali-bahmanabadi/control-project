@@ -1,0 +1,13 @@
+.projects {
+    padding: 20px;
+
+    .projectHeader {
+        display: flex;
+        justify-content: space-between;
+
+        .projectsTitle {
+            font-size: 25PX;
+            font-weight: bold;
+        }
+    }
+}
