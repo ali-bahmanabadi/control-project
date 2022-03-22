@@ -6,46 +6,32 @@ import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 
-export default function AlertDialog({ button, close, open }) {
-    // const [open, setOpen] = React.useState(false)
-
-    // const handleClickOpen = () => {
-    //     setOpen(true)
-    // }
-
-    // const handleClose = () => {
-    //     setOpen(false)
-    // }
-
+export default function AlertDialog({
+    open,
+    handleClose,
+    handleCloseNavigate,
+    title,
+    description,
+}) {
     return (
-        <div>
-            {/* <Button variant="outlined" onClick={handleClickOpen}>
-                Open alert dialog
-            </Button> */}
-            {button}
-            <Dialog
-                open={open}
-                onClose={close}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">
-                    {"Use Google's location service?"}
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        Let Google help apps determine location. This means
-                        sending anonymous location data to Google, even when no
-                        apps are running.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={close}>Disagree</Button>
-                    <Button onClick={close} autoFocus>
-                        Agree
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </div>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+        >
+            <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+            <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                    {description}
+                </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleClose} autoFocus>
+                    خیر
+                </Button>
+                <Button onClick={handleCloseNavigate}>بله</Button>
+            </DialogActions>
+        </Dialog>
     )
 }

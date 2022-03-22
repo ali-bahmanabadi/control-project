@@ -15,17 +15,28 @@ import {
     PersonRounded,
     TaskAltRounded,
 } from '@mui/icons-material'
+import Dialog from '../dialog/Dialog'
+import { useState } from 'react'
 
 const Sidebar = () => {
     const navigate = useNavigate()
+    const [openDialog, setOpenDialog] = useState(false)
+
+    const handleClickOpenDialog = () => {
+        setOpenDialog(true)
+    }
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false)
+    }
     return (
         <div className="sidebar">
-            <div className="top">
+            {/* <div className="top">
                 <Link to="/" style={{ textDecoration: 'none' }}>
                     <span className="logo">Control Project</span>
                 </Link>
             </div>
-            <hr />
+            <hr /> */}
             <div className="center">
                 <List>
                     <ListItem disablePadding>
@@ -53,7 +64,7 @@ const Sidebar = () => {
                         </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate('/task')}>
+                        <ListItemButton onClick={() => navigate('/tasks')}>
                             <ListItemIcon>
                                 <AssignmentIndRounded />
                             </ListItemIcon>
@@ -69,7 +80,7 @@ const Sidebar = () => {
                         </ListItemButton>
                     </ListItem>
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => navigate('/login')}>
+                        <ListItemButton onClick={handleClickOpenDialog}>
                             <ListItemIcon>
                                 <Logout />
                             </ListItemIcon>
@@ -77,6 +88,14 @@ const Sidebar = () => {
                         </ListItemButton>
                     </ListItem>
                 </List>
+                <Dialog
+                    open={openDialog}
+                    handleClose={handleCloseDialog}
+                    handleCloseNavigate={() => navigate('/login')}
+                    title="آیا قصد خروج ار برنامه را دارید؟"
+                    description="با این کار از برنامه خارج شده و به صفحه ' LOGIN ' هدایت می
+                    شوید."
+                />
             </div>
         </div>
     )

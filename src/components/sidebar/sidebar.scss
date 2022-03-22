@@ -23,7 +23,12 @@
   }
 
   .center {
-    padding-right: 10px;
+    width: 200px;
+    position: fixed;
+    top: 80px;
+    right: 15px;
+    box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
 
     ul {
       list-style: none;

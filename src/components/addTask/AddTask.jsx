@@ -1,60 +1,90 @@
 import { useState } from 'react'
-import { CameraAltRounded, LibraryAddRounded } from '@mui/icons-material'
-import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
-import { Button, MenuItem, Select, TextField } from '@mui/material'
-import AdapterJalali from '@date-io/date-fns-jalali'
-import './addUser.scss'
-import styled from '@emotion/styled'
+// component
 import Title from '../dashboardHeaderTitle/Title'
+// material
+import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
+import {
+    Checkbox,
+    ListItemText,
+    MenuItem,
+    Select,
+    TextField,
+} from '@mui/material'
+import AdapterJalali from '@date-io/date-fns-jalali'
+// css
+import './addTask.scss'
+import { LibraryAddRounded } from '@mui/icons-material'
 
-const Input = styled('input')({
-    display: 'none',
-})
+const ITEM_HEIGHT = 48
+const ITEM_PADDING_TOP = 8
+const MenuProps = {
+    PaperProps: {
+        style: {
+            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+            width: 250,
+        },
+    },
+}
 
-const AddUser = ({ title }) => {
+const names = [
+    'Oliver Hansen',
+    'Van Henry',
+    'April Tucker',
+    'Ralph Hubbard',
+    'Omar Alexander',
+    'Carlos Abbott',
+    'Miriam Wagner',
+    'Bradley Wilkerson',
+    'Virginia Andrews',
+    'Kelly Snyder',
+]
+
+const AddTask = () => {
     const [value, setValue] = useState(new Date())
     const [loading, setLoading] = useState(false)
     function sendDataHandler() {
         setLoading(true)
     }
 
+    const [personName, setPersonName] = useState([])
+
+    const handleChange = (event) => {
+        const {
+            target: { value },
+        } = event
+        setPersonName(
+            // On autofill we get a stringified value.
+            typeof value === 'string' ? value.split(',') : value
+        )
+    }
+
     return (
-        <div className="addUser">
-            <Title title={title} />
-            <div>
+        <div className="addTask">
+            <Title title="افزودن وظیفه جدید" />
+            <div className="addTaskWrapper">
                 <form>
                     <div className="formItemLogin">
-                        <label>نام: </label>
+                        <label>اسم: </label>
                         <TextField
                             id="standard-basic"
                             variant="outlined"
-                            placeholder="علی"
+                            placeholder="اسم"
                             size="small"
                             className="loginField"
                         />
                     </div>
                     <div className="formItemLogin">
-                        <label>نام خانوادگی: </label>
+                        <label>توضیحات:</label>
                         <TextField
                             id="standard-basic"
                             variant="outlined"
-                            placeholder="بهمن ابادی"
-                            size="small"
+                            placeholder="توضیحات ..."
+                            size="large"
                             className="loginField"
                         />
                     </div>
                     <div className="formItemLogin">
-                        <label>کدملی: </label>
-                        <TextField
-                            id="standard-basic"
-                            variant="outlined"
-                            placeholder="002220022"
-                            size="small"
-                            className="loginField"
-                        />
-                    </div>
-                    <div className="formItemLogin">
-                        <label>تاریخ تولد: </label>
+                        <label>تاریخ شروع: </label>
                         <LocalizationProvider dateAdapter={AdapterJalali}>
                             <DatePicker
                                 mask="____/__/__"
@@ -71,23 +101,42 @@ const AddUser = ({ title }) => {
                         </LocalizationProvider>
                     </div>
                     <div className="formItemLogin">
-                        <label>شماره تماس: </label>
+                        <label>تاریخ پایان: </label>
+                        <LocalizationProvider dateAdapter={AdapterJalali}>
+                            <DatePicker
+                                mask="____/__/__"
+                                value={value}
+                                onChange={(newValue) => setValue(newValue)}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        className="loginField"
+                                    />
+                                )}
+                                size="small"
+                            />
+                        </LocalizationProvider>
+                    </div>
+                    <div className="formItemLogin">
+                        <label>ضریب: </label>
                         <TextField
                             id="standard-basic"
                             variant="outlined"
-                            placeholder="09121112233"
+                            placeholder="عدد سختی پروزه را وارد کنید"
                             size="small"
                             className="loginField"
+                            type="number"
                         />
                     </div>
                     <div className="formItemLogin">
-                        <label>ایمیل: </label>
+                        <label>درصد پیشرفت پروژه: </label>
                         <TextField
                             id="standard-basic"
                             variant="outlined"
-                            placeholder="ali@gmail.com"
+                            placeholder="درصد پیشرفت پروژه بین 0 تا 100 را وارد کنید"
                             size="small"
                             className="loginField"
+                            type="number"
                         />
                     </div>
                     <div className="formItemLogin">
@@ -107,27 +156,6 @@ const AddUser = ({ title }) => {
                         </Select>
                     </div>
                     <div className="formItemLogin">
-                        <label>عکس پروفایل: </label>
-                        <label htmlFor="icon-button-file" dir="ltr">
-                            <Input
-                                accept="image/*"
-                                multiple
-                                type="file"
-                                id="icon-button-file"
-                            />
-                            <Button
-                                dir="rtl"
-                                className="loginField"
-                                id="icon-button-file"
-                                variant="contained"
-                                component="span"
-                                startIcon={<CameraAltRounded />}
-                            >
-                                ارسال
-                            </Button>
-                        </label>
-                    </div>
-                    <div className="formItemLogin">
                         <LoadingButton
                             variant="contained"
                             startIcon={<LibraryAddRounded />}
@@ -145,4 +173,4 @@ const AddUser = ({ title }) => {
     )
 }
 
-export default AddUser
+export default AddTask

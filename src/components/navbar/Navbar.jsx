@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import './navbar.scss'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import FullscreenExitOutlinedIcon from '@mui/icons-material/FullscreenExitOutlined'
@@ -8,14 +8,16 @@ import {
     LightMode,
     Fullscreen,
     NightlightOutlined,
+    Diamond,
 } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import Dialog from '../dialog/Dialog'
 
 const Navbar = () => {
+    const navigate = useNavigate()
     const { darkMode, dispatch } = useContext(DarkModeContext)
     const [fullScreenStatus, setFullScreenStatus] = useState(false)
-    const [openDialogAlert, setOpenDialogAlert] = useState(false)
+    // const [openDialogAlert, setOpenDialogAlert] = useState(false)
 
     const handleFullScreen = () => {
         var elem = document.documentElement
@@ -39,9 +41,25 @@ const Navbar = () => {
         setFullScreenStatus(!fullScreenStatus)
     }
 
+    // dialog
+
+    const [openDialog, setOpenDialog] = useState(false)
+
+    const handleClickOpenDialog = () => {
+        setOpenDialog(true)
+    }
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false)
+    }
+
     return (
         <div className="navbar">
             <div className="wrapper">
+                <div className="title">
+                    <Diamond />
+                    <span>مدیریت پروژه</span>
+                </div>
                 <div className="search">
                     <input type="text" placeholder="Search..." />
                     <SearchOutlinedIcon />
@@ -73,24 +91,43 @@ const Navbar = () => {
                             />
                         )}
                     </div>
-                    {/* <div className="item">
-                        <NotificationsNoneOutlinedIcon className="icon" />
-                        <div className="counter">1</div>
-                    </div> */}
-                    {/* <div className="item">
-                        <ChatBubbleOutlineOutlinedIcon className="icon" />
-                        <div className="counter">2</div>
-                    </div> */}
+
                     <div className="item">
+                        <Logout
+                            className="icon"
+                            onClick={handleClickOpenDialog}
+                        />
+                        <Dialog
+                            open={openDialog}
+                            handleClose={handleCloseDialog}
+                            handleCloseNavigate={() => navigate('/login')}
+                            title="آیا قصد خروج ار برنامه را دارید؟"
+                            description="با این کار از برنامه خارج شده و به صفحه ' LOGIN ' هدایت می
+                    شوید."
+                        />
                         {/* <Dialog
-                            button={<Logout className="icon" />}
-                            onClick={() => setOpenDialogAlert(!openDialogAlert)}
-                            close={() => setOpenDialogAlert(false)}
-                            open={openDialogAlert}
-                        /> */}
-                        <Link to="/login">
-                            <Logout className="icon" />
-                        </Link>
+                            open={openDialog}
+                            keepMounted
+                            onClose={handleClose}
+                            aria-describedby="alert-dialog-slide-description"
+                        >
+                            <DialogTitle>
+                                {"Use Google's location service?"}
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText id="alert-dialog-slide-description">
+                                    Let Google help apps determine location.
+                                    This means sending anonymous location data
+                                    to Google, even when no apps are running.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleClose}>Disagree</Button>
+                                <Button onClick={() => navigate('/login')}>
+                                    Agree
+                                </Button>
+                            </DialogActions>
+                        </Dialog> */}
                     </div>
                     <div className="item">username</div>
                     <div className="item">

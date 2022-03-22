@@ -1,14 +1,18 @@
+// components
 import Sidebar from '../../components/sidebar/Sidebar'
 import Navbar from '../../components/navbar/Navbar'
-import './home.scss'
-import { Route, Routes } from 'react-router-dom'
 import Dashboard from './dashboard/Dashboard'
-import List from '../list/List'
-import Datatable from '../../components/datatable/Datatable'
 import AddUser from '../../components/addUser/AddUser'
-import Projects from '../../components/projects/Projects'
 import AddProject from '../../components/addProject/AddProject'
 import Profile from '../../components/profile/Profile'
+import AddTask from '../../components/addTask/AddTask'
+import Projects from '../../components/list/Projects'
+import Users from '../../components/list/Users'
+import Tasks from '../../components/list/Tasks'
+// router
+import { Route, Routes } from 'react-router-dom'
+// css
+import './home.scss'
 
 const Home = () => {
     return (
@@ -16,34 +20,46 @@ const Home = () => {
             <Sidebar />
             <div className="homeContainer">
                 <Navbar />
-                <Routes>
-                    <Route path="/">
-                        <Route index element={<Dashboard />} />
-                        {/* projects page  */}
-                        <Route path="projects">
-                            <Route index element={<Projects />} />
-                            <Route
-                                path="add-project"
-                                element={<AddProject />}
-                            />
+                <div className="main">
+                    <Routes>
+                        <Route path="/">
+                            <Route index element={<Dashboard />} />
+                            {/* projects page  */}
+                            <Route path="projects">
+                                <Route index element={<Projects />} />
+                                <Route
+                                    path="add-project"
+                                    element={<AddProject />}
+                                />
+                            </Route>
+                            {/* users pages  */}
+                            <Route path="users">
+                                <Route index element={<Users />} />
+                                <Route
+                                    path="add-user"
+                                    element={
+                                        <AddUser title="افزودن کاربر جدید" />
+                                    }
+                                />
+                            </Route>
+                            {/* profile page  */}
+                            <Route path="profile">
+                                <Route index element={<Profile />} />
+                                <Route
+                                    path="edit-profile"
+                                    element={
+                                        <AddUser title="ویرایش اطلاعات کاربر" />
+                                    }
+                                />
+                            </Route>
+                            {/* task page  */}
+                            <Route path="tasks">
+                                <Route index element={<Tasks />} />
+                                <Route path="add-task" element={<AddTask />} />
+                            </Route>
                         </Route>
-                        {/* users pages  */}
-                        <Route path="users">
-                            <Route index element={<Datatable />} />
-                            <Route path="add-user" element={<AddUser />} />
-                        </Route>
-                        {/* profile page  */}
-                        <Route path="profile">
-                            <Route index element={<Profile />} />
-                            <Route
-                                path="edit-profile"
-                                element={
-                                    <AddUser title="ویرایش اطلاعات کاربر" />
-                                }
-                            />
-                        </Route>
-                    </Route>
-                </Routes>
+                    </Routes>
+                </div>
             </div>
         </div>
     )

@@ -4,13 +4,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgb(188, 170, 253);
+    background-color: rgb(250, 250, 250);
     .loginWrapper {
         width: 40%;
         min-width: 400px;
         min-height: 60%;
-        background-color: rgb(236, 236, 236);
-        box-shadow: 0 0 10px 5px rgba(0,0,0, 0.3);
+        background-color: rgb(243, 243, 243);
+        box-shadow: 4px 4px 10px 2px rgba(0,0,0, 0.2);
         border-radius: 20px;
         padding: 10px;
         .loginTitle {
