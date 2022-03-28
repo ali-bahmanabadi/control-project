@@ -1,7 +1,6 @@
 import './projects.scss'
 import Title from '../dashboardHeaderTitle/Title'
-import TableComponent from '../table/Table'
-import DataTable from '../datatable/DataTable'
+import ProjectsTable from '../datatable/ProjectsTable'
 
 const Projects = () => {
     return (
@@ -11,7 +10,7 @@ const Projects = () => {
                 titleButton="افزودن پروژه جدید"
                 titleButtonHref="/projects/add-project"
             />
-            <DataTable />
+            <ProjectsTable />
         </div>
     )
 }

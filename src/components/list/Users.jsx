@@ -1,6 +1,7 @@
 import './users.scss'
 import Title from '../dashboardHeaderTitle/Title'
-import DataTable from '../datatable/DataTable'
+import Projects from '../datatable/DataTable'
+import UsersTable from '../datatable/UsersTable'
 
 const Users = () => {
     return (
@@ -10,7 +11,7 @@ const Users = () => {
                 titleButton="افزودن کارمند جدید"
                 titleButtonHref="/users/add-user"
             />
-            <DataTable />
+            <UsersTable />
         </div>
     )
 }

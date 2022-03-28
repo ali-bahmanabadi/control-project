@@ -6,6 +6,15 @@ import { useContext } from 'react'
 import { DarkModeContext } from './context/darkModeContext'
 import MuiProvider from './components/provider/MuiProvider'
 
+import store from './redux/store'
+import { fetchProjects } from './redux/projectsSlice'
+import { fetchUsers } from './redux/usersSlice'
+import { fetchTasks } from './redux/tasksSlice'
+
+store.dispatch(fetchProjects())
+store.dispatch(fetchUsers())
+store.dispatch(fetchTasks())
+
 function App() {
     const { darkMode } = useContext(DarkModeContext)
 

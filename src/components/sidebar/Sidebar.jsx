@@ -1,5 +1,5 @@
 import './sidebar.scss'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
     List,
     ListItem,
@@ -31,12 +31,6 @@ const Sidebar = () => {
     }
     return (
         <div className="sidebar">
-            {/* <div className="top">
-                <Link to="/" style={{ textDecoration: 'none' }}>
-                    <span className="logo">Control Project</span>
-                </Link>
-            </div>
-            <hr /> */}
             <div className="center">
                 <List>
                     <ListItem disablePadding>

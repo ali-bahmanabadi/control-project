@@ -24,7 +24,7 @@ const Home = () => {
                     <Routes>
                         <Route path="/">
                             <Route index element={<Dashboard />} />
-                            {/* projects page  */}
+                            {/* project page  */}
                             <Route path="projects">
                                 <Route index element={<Projects />} />
                                 <Route
@@ -32,7 +32,7 @@ const Home = () => {
                                     element={<AddProject />}
                                 />
                             </Route>
-                            {/* users pages  */}
+                            {/* user page  */}
                             <Route path="users">
                                 <Route index element={<Users />} />
                                 <Route
@@ -40,6 +40,11 @@ const Home = () => {
                                     element={
                                         <AddUser title="افزودن کاربر جدید" />
                                     }
+                                />
+                                <Route path=":userId" element={<Profile />} />
+                                <Route
+                                    path="edit-user/:userId"
+                                    element={<AddUser />}
                                 />
                             </Route>
                             {/* profile page  */}
@@ -56,6 +61,10 @@ const Home = () => {
                             <Route path="tasks">
                                 <Route index element={<Tasks />} />
                                 <Route path="add-task" element={<AddTask />} />
+                                <Route
+                                    path="edit-task/:taskId"
+                                    element={<AddTask />}
+                                />
                             </Route>
                         </Route>
                     </Routes>
