@@ -1,19 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 // component
 import Title from '../dashboardHeaderTitle/Title'
 // material
 import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
-import {
-    Checkbox,
-    ListItemText,
-    MenuItem,
-    Select,
-    TextField,
-} from '@mui/material'
+import { MenuItem, Select, TextField } from '@mui/material'
 import AdapterJalali from '@date-io/date-fns-jalali'
 // css
 import './addTask.scss'
 import { LibraryAddRounded } from '@mui/icons-material'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+    addTaskIdToProject,
+    fetchProjects,
+    selectAllProjects,
+    selectProjects,
+} from '../../redux/projectsSlice'
+import {
+    fetchUsers,
+    selectAllUsers,
+    selectUsersEntities,
+} from '../../redux/usersSlice'
+import { addNewTask } from '../../redux/tasksSlice'
+import { nanoid } from '@reduxjs/toolkit'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -26,36 +34,104 @@ const MenuProps = {
     },
 }
 
-const names = [
-    'Oliver Hansen',
-    'Van Henry',
-    'April Tucker',
-    'Ralph Hubbard',
-    'Omar Alexander',
-    'Carlos Abbott',
-    'Miriam Wagner',
-    'Bradley Wilkerson',
-    'Virginia Andrews',
-    'Kelly Snyder',
-]
-
 const AddTask = () => {
-    const [value, setValue] = useState(new Date())
-    const [loading, setLoading] = useState(false)
-    function sendDataHandler() {
-        setLoading(true)
+    const dispatch = useDispatch()
+    // projects store
+    const projectsStatus = useSelector((state) => state.projects.status)
+    const allProjects = useSelector(selectAllProjects)
+    const projectsEntities = useSelector(selectProjects)
+
+    // users store
+    const usersStatus = useSelector((state) => state.users.status)
+    const allUsers = useSelector(selectAllUsers)
+    const usersEntities = useSelector(selectUsersEntities)
+
+    // task store
+
+    // local state
+    const [title, setTitle] = useState('')
+    const [taskStart, setTaskStart] = useState(new Date())
+    const [taskFinish, setTaskFinish] = useState(new Date())
+    const [taskCoefficient, setTaskCoefficient] = useState(1)
+    const [taskProgress, setTaskProgress] = useState(0)
+    const [projectId, setProjectId] = useState('')
+    const [userId, setUserId] = useState('')
+    const [taskPerformer, setTaskPerformer] = useState('')
+    const [projectName, setProjectName] = useState('')
+
+    useEffect(() => {}, [])
+
+    let usersForThisProject
+    if (projectId) {
+        const usersForThisProjectIds =
+            projectsEntities[projectId].projectWorkersId
+
+        usersForThisProject = usersForThisProjectIds.map(
+            (userId) => usersEntities[userId]
+        )
+        console.log(usersForThisProject)
     }
 
-    const [personName, setPersonName] = useState([])
+    // dispatch projects & data
+    useEffect(() => {
+        if (projectsStatus === 'idle') {
+            dispatch(fetchProjects())
+        }
+        if (usersStatus === 'idle') {
+            dispatch(fetchUsers())
+        }
+    }, [dispatch, projectsStatus, usersStatus])
 
-    const handleChange = (event) => {
-        const {
-            target: { value },
-        } = event
-        setPersonName(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value
+    const [loading, setLoading] = useState(false)
+
+    const sendTaskDataHandler = async () => {
+        setLoading(true)
+        const taskId = nanoid()
+
+        // add new task
+        await dispatch(
+            addNewTask({
+                id: taskId,
+                title,
+                taskStart: taskStart.toLocaleDateString('fa-IR'),
+                taskFinish: taskFinish.toLocaleDateString('fa-IR'),
+                taskCoefficient,
+                taskProgress,
+                projectId,
+                userId,
+                taskPerformer,
+                projectName,
+            })
         )
+        const newProjectTask = [
+            ...projectsEntities[projectId]?.projectTasksId,
+            taskId,
+        ]
+        await dispatch(
+            addTaskIdToProject({
+                projectId,
+                projectTasksId: newProjectTask,
+            })
+        )
+        console.log(newProjectTask)
+        setLoading(false)
+    }
+
+    const handleUserId = (e) => {
+        const id = e.target.value
+        setUserId(id)
+        const userFullName =
+            usersEntities[id].name + ' ' + usersEntities[id].lastName
+        setTaskPerformer(userFullName)
+        console.log(userFullName)
+    }
+
+    const handleProjectId = (e) => {
+        const id = e.target.value
+        setProjectId(id)
+        const projectTitle = projectsEntities[id]?.title
+        setProjectName(projectTitle)
+        console.log(projectTitle)
     }
 
     return (
@@ -71,16 +147,8 @@ const AddTask = () => {
                             placeholder="اسم"
                             size="small"
                             className="loginField"
-                        />
-                    </div>
-                    <div className="formItemLogin">
-                        <label>توضیحات:</label>
-                        <TextField
-                            id="standard-basic"
-                            variant="outlined"
-                            placeholder="توضیحات ..."
-                            size="large"
-                            className="loginField"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -88,8 +156,8 @@ const AddTask = () => {
                         <LocalizationProvider dateAdapter={AdapterJalali}>
                             <DatePicker
                                 mask="____/__/__"
-                                value={value}
-                                onChange={(newValue) => setValue(newValue)}
+                                value={taskStart}
+                                onChange={(newValue) => setTaskStart(newValue)}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -105,8 +173,8 @@ const AddTask = () => {
                         <LocalizationProvider dateAdapter={AdapterJalali}>
                             <DatePicker
                                 mask="____/__/__"
-                                value={value}
-                                onChange={(newValue) => setValue(newValue)}
+                                value={taskFinish}
+                                onChange={(newValue) => setTaskFinish(newValue)}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -126,10 +194,12 @@ const AddTask = () => {
                             size="small"
                             className="loginField"
                             type="number"
+                            value={taskCoefficient}
+                            onChange={(e) => setTaskCoefficient(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
-                        <label>درصد پیشرفت پروژه: </label>
+                        <label>درصد پیشرفت: </label>
                         <TextField
                             id="standard-basic"
                             variant="outlined"
@@ -137,6 +207,8 @@ const AddTask = () => {
                             size="small"
                             className="loginField"
                             type="number"
+                            value={taskProgress}
+                            onChange={(e) => setTaskProgress(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -145,23 +217,51 @@ const AddTask = () => {
                             className="loginField"
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            // value={age}
-                            // onChange={handleChange}
+                            value={projectId}
+                            onChange={handleProjectId}
                             size="small"
                         >
-                            <MenuItem value={10}>پروژه 1</MenuItem>
-                            <MenuItem value={20}>پروژه 2</MenuItem>
-                            <MenuItem value={30}>پروژه 3</MenuItem>
-                            <MenuItem value={40}>پروژه 4</MenuItem>
+                            {allProjects &&
+                                projectsStatus === 'success' &&
+                                allProjects.map((project) => (
+                                    <MenuItem
+                                        key={project.id}
+                                        value={project.id}
+                                    >
+                                        {project.title}
+                                    </MenuItem>
+                                ))}
                         </Select>
                     </div>
+                    {projectId && (
+                        <div className="formItemLogin">
+                            <label>انجام دهنده:</label>
+                            <Select
+                                className="loginField"
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={userId}
+                                onChange={handleUserId}
+                                size="small"
+                            >
+                                {usersForThisProject &&
+                                    usersForThisProject.length > 0 &&
+                                    usersForThisProject.map((user) => (
+                                        <MenuItem
+                                            value={user.id}
+                                            key={user.id}
+                                        >{`${user.name} ${user.lastName}`}</MenuItem>
+                                    ))}
+                            </Select>
+                        </div>
+                    )}
                     <div className="formItemLogin">
                         <LoadingButton
                             variant="contained"
                             startIcon={<LibraryAddRounded />}
                             size="large"
                             loadingPosition="start"
-                            onClick={sendDataHandler}
+                            onClick={sendTaskDataHandler}
                             loading={loading}
                         >
                             ذخیره اطلاعات

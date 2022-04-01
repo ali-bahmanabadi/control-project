@@ -1,35 +1,57 @@
 import './datatable.scss'
 import { DataGrid } from '@mui/x-data-grid'
 // import { userRows } from '../../datatablesource'
-import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import {
-    selectProjectById,
-    selectProjects,
-    selectProjectIds,
-} from '../../redux/projectsSlice'
-import store from '../../redux/store'
+import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { deleteTask, fetchTasks, selectTasks } from '../../redux/tasksSlice'
+import AlertDialog from '../dialog/Dialog'
+
+// import store from '../../redux/store'
 
 const TasksTable = () => {
-    const navigate = useNavigate()
-    const allProjects = useSelector((state) => state.tasks.entities)
+    const dispatch = useDispatch()
 
-    const userRows = Object.values(allProjects)
+    const [dialogStatus, setDialogStatus] = useState(false)
+
+    // task store
+    const taskStatus = useSelector((state) => state.tasks.status)
+
+    useEffect(() => {
+        if (taskStatus === 'idle') {
+            dispatch(fetchTasks())
+        }
+    }, [dispatch, taskStatus])
+
+    // -------------------------------------
+
+    const allTasks = useSelector(selectTasks)
+
+    const userRows = Object.values(allTasks)
 
     const [data, setData] = useState(userRows)
     const handleDelete = (id) => {
         setData(data.filter((item) => item.id !== id))
     }
+
+    const handleDeleteTask = async () => {
+        const taskId = window.location.hash.substring(1)
+        if (taskId) {
+            await dispatch(deleteTask(taskId))
+            window.location.reload(false)
+        }
+        setDialogStatus(false)
+    }
+
     const userColumns = [
         { field: 'range', headerName: 'ردیف', width: 50 },
         { field: 'title', headerName: 'نام وظیفه', width: 140 },
-        { field: 'startProject', headerName: 'تاریخ شروع', width: 140 },
-        { field: 'finishProject', headerName: 'تاریخ پایان', width: 140 },
-        { field: 'coefficient', headerName: 'ضریب', width: 140 },
-        { field: 'projectProgress', headerName: 'درصد پیشرفت', width: 140 },
-        { field: 'taskManager', headerName: 'انجام دهنده', width: 140 },
-        { field: 'headerProject', headerName: 'پروژه مربوطه', width: 140 },
+        { field: 'taskPerformer', headerName: 'انجام دهنده', width: 140 },
+        { field: 'projectName', headerName: 'پروژه مربوطه', width: 140 },
+        { field: 'taskCoefficient', headerName: 'ضریب', width: 140 },
+        { field: 'taskProgress', headerName: 'درصد پیشرفت', width: 140 },
+        { field: 'taskStart', headerName: 'تاریخ شروع', width: 140 },
+        { field: 'taskFinish', headerName: 'تاریخ پایان', width: 140 },
         {
             field: 'action',
             headerName: 'عملیات',
@@ -40,12 +62,20 @@ const TasksTable = () => {
                         <Link to={`/tasks/edit-task/${params.row.id}`}>
                             <div className="viewButton">ویرایش</div>
                         </Link>
-                        <div
+                        <Link
+                            to={`/tasks#${params.row.id}`}
                             className="deleteButton"
-                            onClick={() => handleDelete(params.row.id)}
+                            onClick={() => setDialogStatus(true)}
                         >
                             حذف
-                        </div>
+                        </Link>
+                        <AlertDialog
+                            open={dialogStatus}
+                            handleClose={() => setDialogStatus(false)}
+                            handleCloseNavigate={handleDeleteTask}
+                            title={`ایا میخواهید وظیفه را حذف کنید؟`}
+                            description="با این کار وظیفه کامل حذف شده و قابل بازگردانی نیست !"
+                        />
                     </div>
                 )
             },
@@ -61,7 +91,6 @@ const TasksTable = () => {
                 columns={userColumns}
                 pageSize={8}
                 rowsPerPageOptions={[8]}
-                checkboxSelection
             />
         </div>
     )

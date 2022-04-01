@@ -9,6 +9,10 @@ const store = configureStore({
         users: usersSlice,
         tasks: tasksSlice,
     },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: false,
+        }),
 })
 
 export default store

@@ -1,17 +1,23 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchUsers, selectUsersEntities } from '../../redux/usersSlice'
 import { LibraryAddRounded } from '@mui/icons-material'
 import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
 import {
     Checkbox,
-    InputLabel,
     ListItemText,
     MenuItem,
-    OutlinedInput,
     Select,
     TextField,
 } from '@mui/material'
 import AdapterJalali from '@date-io/date-fns-jalali'
 import './addProjects.scss'
+import {
+    addNewProject,
+    selectProjectById,
+    updateProject,
+} from '../../redux/projectsSlice'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -24,40 +30,91 @@ const MenuProps = {
     },
 }
 
-const names = [
-    'Oliver Hansen',
-    'Van Henry',
-    'April Tucker',
-    'Ralph Hubbard',
-    'Omar Alexander',
-    'Carlos Abbott',
-    'Miriam Wagner',
-    'Bradley Wilkerson',
-    'Virginia Andrews',
-    'Kelly Snyder',
-]
+const AddProject = ({ pageTitle }) => {
+    const navigate = useNavigate()
+    const { projectId } = useParams()
+    const dispatch = useDispatch()
 
-const AddProject = () => {
-    const [value, setValue] = useState(new Date())
-    const [loading, setLoading] = useState(false)
-    function sendDataHandler() {
-        setLoading(true)
+    // users store 
+    const usersStatus = useSelector((state) => state.users.status)
+    const users = useSelector(selectUsersEntities)
+    const usersId = Object.values(users).map((user) => user.id)
+
+    // projects store 
+    const projectData = useSelector((state) =>
+        selectProjectById(state, projectId)
+    )
+
+    // local state 
+    const [title, setTitle] = useState(projectData?.title || '')
+    const [projectStart, setProjectStart] = useState(
+        projectData?.projectStart || new Date()
+    )
+    const [projectFinish, setProjectFinish] = useState(
+        projectData?.projectFinish || new Date()
+    )
+    const [projectWorkersId, setProjectWorkersId] = useState(
+        projectData?.projectWorkersId || []
+    )
+    const [status, setStatus] = useState('idle')
+
+    useEffect(() => {
+        if (usersStatus === 'idle') {
+            dispatch(fetchUsers())
+        }
+    }, [dispatch, usersStatus])
+
+    const sendNewProjectDataHandler = async () => {
+        setStatus('pending')
+        if (projectId) {
+            await dispatch(
+                updateProject({
+                    projectId,
+                    title,
+                    projectStart,
+                    projectFinish,
+                    projectWorkersId,
+                })
+            )
+            // window.location.reload(false)
+            navigate('/projects')
+        } else {
+            await dispatch(
+                addNewProject({
+                    title,
+                    projectStart,
+                    projectFinish,
+                    projectWorkersId,
+                })
+            )
+        }
+
+        setStatus('idle')
+        setTitle('')
+        setProjectStart(new Date())
+        setProjectFinish(new Date())
+        setProjectWorkersId([])
     }
 
-    const [personName, setPersonName] = React.useState([])
-
-    const handleChange = (event) => {
+    const handleSelectWorker = (event) => {
         const {
             target: { value },
         } = event
-        setPersonName(
-            // On autofill we get a stringified value.
+        setProjectWorkersId(
             typeof value === 'string' ? value.split(',') : value
         )
     }
+
+    const canSave = () => {
+        return (
+            [title].every(Boolean) && status === 'idle'
+            // && projectWorkersId.length > 0
+        )
+    }
+
     return (
         <div className="addProject">
-            <div className="addProjectTitle">افزورن پروژه جدید</div>
+            <div className="addProjectTitle">{pageTitle}</div>
             <div>
                 <form>
                     <div className="formItemLogin">
@@ -68,16 +125,8 @@ const AddProject = () => {
                             placeholder="اسم"
                             size="small"
                             className="loginField"
-                        />
-                    </div>
-                    <div className="formItemLogin">
-                        <label>توضیحات پروژه:</label>
-                        <TextField
-                            id="standard-basic"
-                            variant="outlined"
-                            placeholder="توضیحات ..."
-                            size="large"
-                            className="loginField"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -85,8 +134,10 @@ const AddProject = () => {
                         <LocalizationProvider dateAdapter={AdapterJalali}>
                             <DatePicker
                                 mask="____/__/__"
-                                value={value}
-                                onChange={(newValue) => setValue(newValue)}
+                                value={projectStart}
+                                onChange={(newValue) =>
+                                    setProjectStart(newValue)
+                                }
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -102,8 +153,10 @@ const AddProject = () => {
                         <LocalizationProvider dateAdapter={AdapterJalali}>
                             <DatePicker
                                 mask="____/__/__"
-                                value={value}
-                                onChange={(newValue) => setValue(newValue)}
+                                value={projectFinish}
+                                onChange={(newValue) =>
+                                    setProjectFinish(newValue)
+                                }
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -124,19 +177,37 @@ const AddProject = () => {
                             labelId="demo-multiple-checkbox-label"
                             id="demo-multiple-checkbox"
                             multiple
-                            value={personName}
-                            onChange={handleChange}
-                            // input={<OutlinedInput label="Tag" />}
-                            renderValue={(selected) => selected.join(' - ')}
+                            value={projectWorkersId}
+                            onChange={handleSelectWorker}
+                            color="primary"
+                            renderValue={(selected) =>
+                                selected
+                                    .map(
+                                        (userId) =>
+                                            users[+userId]?.name +
+                                            ' ' +
+                                            users[userId]?.lastName
+                                    )
+                                    .join(' - ')
+                            }
                             MenuProps={MenuProps}
                             style={{ overflow: 'hidden' }}
                         >
-                            {names.map((name) => (
-                                <MenuItem key={name} value={name}>
+                            {usersId.map((userId) => (
+                                <MenuItem key={userId} value={userId}>
                                     <Checkbox
-                                        checked={personName.indexOf(name) > -1}
+                                        checked={
+                                            projectWorkersId.indexOf(userId) >
+                                            -1
+                                        }
                                     />
-                                    <ListItemText primary={name} />
+                                    <ListItemText
+                                        primary={
+                                            users[+userId]?.name +
+                                            ' ' +
+                                            users[userId]?.lastName
+                                        }
+                                    />
                                 </MenuItem>
                             ))}
                         </Select>
@@ -147,8 +218,9 @@ const AddProject = () => {
                             startIcon={<LibraryAddRounded />}
                             size="large"
                             loadingPosition="start"
-                            onClick={sendDataHandler}
-                            loading={loading}
+                            onClick={sendNewProjectDataHandler}
+                            loading={status === 'pending'}
+                            disabled={!canSave()}
                         >
                             ذخیره اطلاعات
                         </LoadingButton>

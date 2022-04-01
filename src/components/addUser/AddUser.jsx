@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CameraAltRounded, LibraryAddRounded } from '@mui/icons-material'
 import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
 import { Button, MenuItem, Select, TextField } from '@mui/material'
@@ -6,16 +6,80 @@ import AdapterJalali from '@date-io/date-fns-jalali'
 import './addUser.scss'
 import styled from '@emotion/styled'
 import Title from '../dashboardHeaderTitle/Title'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+    fetchProjects,
+    selectAllProjects,
+    selectProjects,
+} from '../../redux/projectsSlice'
+import {
+    addNewUser,
+    fetchUsers,
+    selectUserById,
+    updateUser,
+} from '../../redux/usersSlice'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const Input = styled('input')({
     display: 'none',
 })
 
 const AddUser = ({ title }) => {
-    const [value, setValue] = useState(new Date())
+    const { userId } = useParams()
+    const dispatch = useDispatch()
+    const statusProject = useSelector((state) => state.projects.status)
+    const statusUser = useSelector((state) => state.users.status)
+
+    const editUser = useSelector((state) => selectUserById(state, userId))
+
+    const [name, setName] = useState('')
+    const [lastName, setLastName] = useState('')
+    const [kodmelli, setKodmelli] = useState('')
+    const [phone, setPhone] = useState('')
+    const [birthday, setBirthday] = useState(new Date())
+
+    useEffect(() => {
+        if (statusUser === 'idle') {
+            dispatch(fetchUsers())
+        }
+        if (editUser) {
+            setName(editUser.name)
+            setLastName(editUser.lastName)
+            setKodmelli(editUser.kodmelli)
+            setPhone(editUser?.phone)
+            setBirthday(editUser?.birthday)
+        }
+    }, [dispatch, editUser, statusProject, statusUser])
+
     const [loading, setLoading] = useState(false)
-    function sendDataHandler() {
+    const sendUserDataHandler = async () => {
         setLoading(true)
+        if (userId) {
+            // save edited user
+            await dispatch(
+                updateUser({
+                    userId,
+                    name,
+                    lastName,
+                    kodmelli,
+                    phone,
+                    birthday,
+                })
+            )
+        } else {
+            // save new user
+            await dispatch(
+                addNewUser({
+                    name,
+                    lastName,
+                    kodmelli,
+                    phone,
+                    birthday,
+                })
+            )
+        }
+
+        setLoading(false)
     }
 
     return (
@@ -31,6 +95,8 @@ const AddUser = ({ title }) => {
                             placeholder="علی"
                             size="small"
                             className="loginField"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -41,6 +107,8 @@ const AddUser = ({ title }) => {
                             placeholder="بهمن ابادی"
                             size="small"
                             className="loginField"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -51,6 +119,8 @@ const AddUser = ({ title }) => {
                             placeholder="002220022"
                             size="small"
                             className="loginField"
+                            value={kodmelli}
+                            onChange={(e) => setKodmelli(e.target.value)}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -58,8 +128,8 @@ const AddUser = ({ title }) => {
                         <LocalizationProvider dateAdapter={AdapterJalali}>
                             <DatePicker
                                 mask="____/__/__"
-                                value={value}
-                                onChange={(newValue) => setValue(newValue)}
+                                value={birthday}
+                                onChange={(newValue) => setBirthday(newValue)}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -78,54 +148,9 @@ const AddUser = ({ title }) => {
                             placeholder="09121112233"
                             size="small"
                             className="loginField"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
                         />
-                    </div>
-                    <div className="formItemLogin">
-                        <label>ایمیل: </label>
-                        <TextField
-                            id="standard-basic"
-                            variant="outlined"
-                            placeholder="ali@gmail.com"
-                            size="small"
-                            className="loginField"
-                        />
-                    </div>
-                    <div className="formItemLogin">
-                        <label>پروژه مربوطه:</label>
-                        <Select
-                            className="loginField"
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            // value={age}
-                            // onChange={handleChange}
-                            size="small"
-                        >
-                            <MenuItem value={10}>پروژه 1</MenuItem>
-                            <MenuItem value={20}>پروژه 2</MenuItem>
-                            <MenuItem value={30}>پروژه 3</MenuItem>
-                            <MenuItem value={40}>پروژه 4</MenuItem>
-                        </Select>
-                    </div>
-                    <div className="formItemLogin">
-                        <label>عکس پروفایل: </label>
-                        <label htmlFor="icon-button-file" dir="ltr">
-                            <Input
-                                accept="image/*"
-                                multiple
-                                type="file"
-                                id="icon-button-file"
-                            />
-                            <Button
-                                dir="rtl"
-                                className="loginField"
-                                id="icon-button-file"
-                                variant="contained"
-                                component="span"
-                                startIcon={<CameraAltRounded />}
-                            >
-                                ارسال
-                            </Button>
-                        </label>
                     </div>
                     <div className="formItemLogin">
                         <LoadingButton
@@ -133,7 +158,7 @@ const AddUser = ({ title }) => {
                             startIcon={<LibraryAddRounded />}
                             size="large"
                             loadingPosition="start"
-                            onClick={sendDataHandler}
+                            onClick={sendUserDataHandler}
                             loading={loading}
                         >
                             ذخیره اطلاعات

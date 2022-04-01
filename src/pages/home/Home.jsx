@@ -29,7 +29,15 @@ const Home = () => {
                                 <Route index element={<Projects />} />
                                 <Route
                                     path="add-project"
-                                    element={<AddProject />}
+                                    element={
+                                        <AddProject pageTitle="افزورن پروژه جدید" />
+                                    }
+                                />
+                                <Route
+                                    path="edit-project/:projectId"
+                                    element={
+                                        <AddProject pageTitle="ویرایش پروژه" />
+                                    }
                                 />
                             </Route>
                             {/* user page  */}
@@ -44,7 +52,9 @@ const Home = () => {
                                 <Route path=":userId" element={<Profile />} />
                                 <Route
                                     path="edit-user/:userId"
-                                    element={<AddUser />}
+                                    element={
+                                        <AddUser title="ویرایش اطلاعات کاربر" />
+                                    }
                                 />
                             </Route>
                             {/* profile page  */}

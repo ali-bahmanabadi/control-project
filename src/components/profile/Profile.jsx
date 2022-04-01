@@ -1,10 +1,20 @@
 import { EditRounded } from '@mui/icons-material'
 import { Button } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import './profile.scss'
 
 const Profile = () => {
     const navigate = useNavigate()
+    const param = useParams()
+    const { state: userData } = useLocation()
+    console.log(userData)
+
+    const handleButtonClick = () => {
+        if (userData) {
+            navigate(`/users/edit-user/${userData.id}`)
+        }
+    }
+
     return (
         <div className="profile">
             <div className="profileWrapper">
@@ -12,7 +22,7 @@ const Profile = () => {
                     <Button
                         variant="contained"
                         startIcon={<EditRounded />}
-                        onClick={() => navigate('/profile/edit-profile')}
+                        onClick={handleButtonClick}
                     >
                         ویرایش
                     </Button>
@@ -24,22 +34,22 @@ const Profile = () => {
                         className="profileImage"
                     />
                     <div>
-                        <div className="name">علی</div>
-                        <div className="lastName">بهمن ابادی</div>
+                        <div className="name">{userData.name}</div>
+                        <div className="lastName">{userData.lastName}</div>
                     </div>
                 </div>
                 <div className="otherDetail">
                     <div className="right">
                         <span className="title">کدملی</span>
-                        <span className="value">0022113344</span>
+                        <span className="value">{userData.kodmelli}</span>
                         <span className="title">تاریخ تولد</span>
-                        <span className="value">1376/12/08</span>
+                        <span className="value">{userData.birthday}</span>
                         <span className="title">شماره تماس</span>
-                        <span className="value">0932548955</span>
+                        <span className="value">{userData.phone}</span>
                     </div>
                     <div className="left">
                         <span className="title">ایمیل</span>
-                        <span className="value">ali@gmail.com</span>
+                        <span className="value"></span>
                         <span className="title">سمت</span>
                         <span className="value">مدیر</span>
                     </div>

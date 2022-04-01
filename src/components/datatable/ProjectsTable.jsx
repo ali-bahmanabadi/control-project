@@ -1,36 +1,37 @@
 import './datatable.scss'
 import { DataGrid } from '@mui/x-data-grid'
-// import { userRows } from '../../datatablesource'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import {
-    selectProjectById,
-    selectProjects,
-    selectProjectIds,
-} from '../../redux/projectsSlice'
-import store from '../../redux/store'
-
-const userColumns = [
-    { field: 'range', headerName: 'ردیف', width: 70 },
-    { field: 'title', headerName: 'اسم پروژه', width: 150 },
-    { field: 'startProject', headerName: 'تاریخ شروع پروژه', width: 150 },
-    { field: 'finishProject', headerName: 'تاریخ پایان پروژه', width: 150 },
-    { field: 'numberOfWorker', headerName: 'تعداد کارمندان پروژه', width: 150 },
-    { field: 'projectProgress', headerName: 'پیشرفت پروژه', width: 150 },
-]
+import { useDispatch, useSelector } from 'react-redux'
+import { deleteProject, selectProjects } from '../../redux/projectsSlice'
+import AlertDialog from '../dialog/Dialog'
 
 const ProjectsTable = () => {
-    const allProjects = useSelector((state) => state.projects.entities)
+    const [dialogStatus, setDialogStatus] = useState(false)
+    const dispatch = useDispatch()
+    const projectsData = useSelector(selectProjects)
+    const userRows = Object.values(projectsData)
 
-    const userRows = Object.values(allProjects)
-
-    const [data, setData] = useState(userRows)
-    const handleDelete = (id) => {
-        setData(data.filter((item) => item.id !== id))
+    const handleDeleteProject = async () => {
+        const id = window.location.hash.substring(1)
+        await dispatch(deleteProject(id))
+        window.location.reload(false)
     }
 
-    const actionColumn = [
+    const userColumns = [
+        { field: 'range', headerName: 'ردیف', width: 70 },
+        { field: 'title', headerName: 'اسم پروژه', width: 150 },
+        { field: 'projectStart', headerName: 'تاریخ شروع پروژه', width: 150 },
+        { field: 'projectFinish', headerName: 'تاریخ پایان پروژه', width: 150 },
+        {
+            field: 'numberOfWorker',
+            headerName: 'تعداد کارمندان پروژه',
+            width: 150,
+            renderCell: (params) => {
+                return <span>{params.row.projectWorkersId.length}</span>
+            },
+        },
+        { field: 'projectProgress', headerName: 'پیشرفت پروژه', width: 150 },
         {
             field: 'action',
             headerName: 'عملیات',
@@ -39,17 +40,25 @@ const ProjectsTable = () => {
                 return (
                     <div className="cellAction">
                         <Link
-                            to="/users/test"
+                            to={`/projects/edit-project/${params.row.id}`}
                             style={{ textDecoration: 'none' }}
                         >
                             <div className="viewButton">ویرایش</div>
                         </Link>
-                        <div
+                        <Link
+                            to={`/projects#${params.row.id}`}
                             className="deleteButton"
-                            onClick={() => handleDelete(params.row.id)}
+                            onClick={() => setDialogStatus(true)}
                         >
                             حذف
-                        </div>
+                        </Link>
+                        <AlertDialog
+                            open={dialogStatus}
+                            handleClose={() => setDialogStatus(false)}
+                            handleCloseNavigate={() => handleDeleteProject()}
+                            title={`ایا میخواهید پروژه را حذف کنید؟`}
+                            description="با این کار پروژه کامل حذف شده و قابل بازگردانی نیست !"
+                        />
                     </div>
                 )
             },
@@ -58,14 +67,12 @@ const ProjectsTable = () => {
 
     return (
         <div className="datatable">
-            {}
             <DataGrid
                 className="datagrid"
                 rows={userRows}
-                columns={userColumns.concat(actionColumn)}
+                columns={userColumns}
                 pageSize={8}
                 rowsPerPageOptions={[8]}
-                checkboxSelection
             />
         </div>
     )
