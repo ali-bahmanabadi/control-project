@@ -9,24 +9,24 @@ import { client } from '../api/client'
 export const fetchProjects = createAsyncThunk(
     'projects/fetchProjects',
     async () => {
-        return await client.get('http://localhost:5000/projects')
+        const response = await axios.get('http://localhost:5000/projects')
+        return response.data
     }
 )
 
 export const addNewProject = createAsyncThunk(
     'projects/newProjects',
     async (newProjectData) => {
-        return await client.post(
-            'http://localhost:5000/projects',
-            newProjectData
-        )
+        await axios.post('http://localhost:5000/projects', newProjectData)
+        return newProjectData
     }
 )
 
 export const deleteProject = createAsyncThunk(
     'projects/deleteProject',
     async (projectId) => {
-        return await axios.delete(`http://localhost:5000/projects/${projectId}`)
+        await axios.delete(`http://localhost:5000/projects/${projectId}`)
+        return projectId
     }
 )
 
@@ -34,22 +34,18 @@ export const updateProject = createAsyncThunk(
     'projects/updateProject',
     async (data) => {
         const { projectId, ...option } = data
-        return await axios.patch(
-            `http://localhost:5000/projects/${projectId}`,
-            option
-        )
+        await axios.patch(`http://localhost:5000/projects/${projectId}`, option)
+        return data
     }
 )
 
 export const addTaskIdToProject = createAsyncThunk(
     'projects/addTaskIdToProject',
     async (data) => {
-        const { projectId, ...option } = data
+        const { projectId, newTaskId, ...option } = data
         console.log(option)
-        return await axios.patch(
-            `http://localhost:5000/projects/${projectId}`,
-            option
-        )
+        await axios.patch(`http://localhost:5000/projects/${projectId}`, option)
+        return data
     }
 )
 
@@ -85,8 +81,18 @@ const projectsSlice = createSlice({
         },
         [addNewProject.fulfilled]: projectsAdapter.addOne,
         [deleteProject.fulfilled]: projectsAdapter.removeOne,
-        [updateProject.fulfilled]: projectsAdapter.updateOne,
-        [addTaskIdToProject.fulfilled]: projectsAdapter.updateOne,
+        [updateProject.fulfilled]: (state, action) => {
+            const { projectId, ...data } = action.payload
+            state.entities[projectId] = {
+                ...state.entities[projectId],
+                ...data,
+            }
+        },
+        [addTaskIdToProject.fulfilled]: (state, action) => {
+            const { projectId, projectTasksId } = action.payload
+            console.log(projectTasksId)
+            state.entities[projectId].projectTasksId.push(...projectTasksId)
+        },
     },
 })
 

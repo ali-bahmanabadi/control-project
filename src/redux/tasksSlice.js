@@ -13,16 +13,24 @@ export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
 export const addNewTask = createAsyncThunk(
     'tasks/addNewTask',
     async (taskData) => {
-        return await axios.post('http://localhost:5000/tasks', taskData)
+        await axios.post('http://localhost:5000/tasks', taskData)
+        return taskData
     }
 )
 
 export const deleteTask = createAsyncThunk(
     'tasks/deleteTask',
     async (taskId) => {
-        return await axios.delete(`http://localhost:5000/tasks/${taskId}`)
+        await axios.delete(`http://localhost:5000/tasks/${taskId}`)
+        return taskId
     }
 )
+
+export const updateTask = createAsyncThunk('tasks/updateTask', async (data) => {
+    const { taskId, ...option } = data
+    await axios.patch(`http://localhost:5000/tasks/${taskId}`, option)
+    return data
+})
 
 const tasksAdapter = createEntityAdapter()
 
@@ -54,6 +62,10 @@ const tasksSlice = createSlice({
         },
         [addNewTask.fulfilled]: tasksAdapter.addOne,
         [deleteTask.fulfilled]: tasksAdapter.removeOne,
+        [updateTask.fulfilled]: (state, action) => {
+            const { taskId, ...option } = action.payload
+            state.entities[taskId] = { ...state.entities[taskId], ...option }
+        },
     },
 })
 

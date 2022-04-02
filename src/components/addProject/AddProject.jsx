@@ -18,6 +18,7 @@ import {
     updateProject,
 } from '../../redux/projectsSlice'
 import { useNavigate, useParams } from 'react-router-dom'
+import { nanoid } from '@reduxjs/toolkit'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -35,17 +36,17 @@ const AddProject = ({ pageTitle }) => {
     const { projectId } = useParams()
     const dispatch = useDispatch()
 
-    // users store 
+    // users store
     const usersStatus = useSelector((state) => state.users.status)
     const users = useSelector(selectUsersEntities)
     const usersId = Object.values(users).map((user) => user.id)
 
-    // projects store 
+    // projects store
     const projectData = useSelector((state) =>
         selectProjectById(state, projectId)
     )
 
-    // local state 
+    // local state
     const [title, setTitle] = useState(projectData?.title || '')
     const [projectStart, setProjectStart] = useState(
         projectData?.projectStart || new Date()
@@ -66,6 +67,7 @@ const AddProject = ({ pageTitle }) => {
 
     const sendNewProjectDataHandler = async () => {
         setStatus('pending')
+        // save edited project
         if (projectId) {
             await dispatch(
                 updateProject({
@@ -76,24 +78,23 @@ const AddProject = ({ pageTitle }) => {
                     projectWorkersId,
                 })
             )
-            // window.location.reload(false)
-            navigate('/projects')
         } else {
+            // save new project
             await dispatch(
                 addNewProject({
+                    id: nanoid(),
                     title,
                     projectStart,
                     projectFinish,
                     projectWorkersId,
+                    projectTasksId: [],
+                    projectProgress: 0,
                 })
             )
         }
 
         setStatus('idle')
-        setTitle('')
-        setProjectStart(new Date())
-        setProjectFinish(new Date())
-        setProjectWorkersId([])
+        navigate('/projects')
     }
 
     const handleSelectWorker = (event) => {

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { deleteUser, fetchUsers, selectAllUsers } from '../../redux/usersSlice'
 import AlertDialog from '../dialog/Dialog'
+import { AccountCircle } from '@mui/icons-material'
 
 const UsersTable = () => {
     const dispatch = useDispatch()
@@ -29,10 +30,7 @@ const UsersTable = () => {
 
     const handleDeleteUser = async () => {
         const userId = window.location.hash.substring(1)
-        if (userId) {
-            await dispatch(deleteUser(userId))
-            window.location.reload(false)
-        }
+        await dispatch(deleteUser(userId))
         setDialogStatus(false)
     }
 
@@ -44,13 +42,13 @@ const UsersTable = () => {
             width: 150,
             renderCell: (params) => {
                 return (
-                    <Link to={`/users/${params.row.id}`} state={params.row}>
-                        <div>
-                            {/* <img
-                                src={params.row.image}
-                                alt=""
-                                style={{ width: '30px' }}
-                            /> */}
+                    <Link
+                        to={`/users/${params.row.id}`}
+                        state={params.row}
+                        style={{ color: 'inherit' }}
+                    >
+                        <div className="profileCell">
+                            <AccountCircle style={{ marginLeft: '10px' }} />
                             <span>{params.row.name}</span>
                         </div>
                     </Link>
@@ -59,7 +57,20 @@ const UsersTable = () => {
         },
         { field: 'lastName', headerName: 'نام خانوادگی', width: 150 },
         { field: 'kodmelli', headerName: 'کدملی', width: 150 },
-        { field: 'birthday', headerName: 'تاریخ تولد', width: 150 },
+        {
+            field: 'birthday',
+            headerName: 'تاریخ تولد',
+            width: 150,
+            renderCell: (params) => {
+                return (
+                    <span>
+                        {new Date(params.row.birthday).toLocaleDateString(
+                            'fa-IR'
+                        )}
+                    </span>
+                )
+            },
+        },
         { field: 'phone', headerName: 'شماره تلفن', width: 150 },
         {
             field: 'action',

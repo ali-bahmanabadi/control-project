@@ -20,8 +20,14 @@ import {
     selectAllUsers,
     selectUsersEntities,
 } from '../../redux/usersSlice'
-import { addNewTask } from '../../redux/tasksSlice'
+import {
+    addNewTask,
+    fetchTasks,
+    selectTaskById,
+    updateTask,
+} from '../../redux/tasksSlice'
 import { nanoid } from '@reduxjs/toolkit'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -34,8 +40,11 @@ const MenuProps = {
     },
 }
 
-const AddTask = () => {
+const AddTask = ({ pageTitle }) => {
     const dispatch = useDispatch()
+    const { taskId: taskParamsId } = useParams()
+    const navigate = useNavigate()
+
     // projects store
     const projectsStatus = useSelector((state) => state.projects.status)
     const allProjects = useSelector(selectAllProjects)
@@ -47,11 +56,13 @@ const AddTask = () => {
     const usersEntities = useSelector(selectUsersEntities)
 
     // task store
+    const taskStatus = useSelector((state) => state.tasks.status)
+    const taskForEdit = useSelector((state) =>
+        selectTaskById(state, taskParamsId)
+    )
 
     // local state
     const [title, setTitle] = useState('')
-    const [taskStart, setTaskStart] = useState(new Date())
-    const [taskFinish, setTaskFinish] = useState(new Date())
     const [taskCoefficient, setTaskCoefficient] = useState(1)
     const [taskProgress, setTaskProgress] = useState(0)
     const [projectId, setProjectId] = useState('')
@@ -59,16 +70,36 @@ const AddTask = () => {
     const [taskPerformer, setTaskPerformer] = useState('')
     const [projectName, setProjectName] = useState('')
 
-    useEffect(() => {}, [])
+    useEffect(() => {
+        if (taskStatus === 'idle') {
+            dispatch(fetchTasks())
+        }
+
+        if (taskParamsId && taskStatus === 'success') {
+            setTitle(taskForEdit.title || '')
+            setTaskCoefficient(taskForEdit.taskCoefficient || 1)
+            setTaskProgress(taskForEdit.taskProgress || 0)
+            setProjectId(taskForEdit.projectId || '')
+            setTaskPerformer(taskForEdit.taskPerformer || '')
+            setProjectName(taskForEdit.projectName || '')
+            setUserId(taskForEdit.userId || '')
+        }
+    }, [dispatch, taskParamsId, taskStatus, taskForEdit])
 
     let usersForThisProject
-    if (projectId) {
+    if (
+        projectId &&
+        projectsStatus === 'success' &&
+        usersStatus === 'success'
+    ) {
         const usersForThisProjectIds =
             projectsEntities[projectId].projectWorkersId
 
         usersForThisProject = usersForThisProjectIds.map(
             (userId) => usersEntities[userId]
         )
+
+        console.log(usersForThisProjectIds)
         console.log(usersForThisProject)
     }
 
@@ -86,35 +117,67 @@ const AddTask = () => {
 
     const sendTaskDataHandler = async () => {
         setLoading(true)
-        const taskId = nanoid()
+        const taskNanoId = nanoid()
 
-        // add new task
-        await dispatch(
-            addNewTask({
-                id: taskId,
-                title,
-                taskStart: taskStart.toLocaleDateString('fa-IR'),
-                taskFinish: taskFinish.toLocaleDateString('fa-IR'),
-                taskCoefficient,
-                taskProgress,
-                projectId,
-                userId,
-                taskPerformer,
-                projectName,
-            })
-        )
-        const newProjectTask = [
-            ...projectsEntities[projectId]?.projectTasksId,
-            taskId,
-        ]
-        await dispatch(
-            addTaskIdToProject({
-                projectId,
-                projectTasksId: newProjectTask,
-            })
-        )
-        console.log(newProjectTask)
+        // save edited task
+        if (taskParamsId) {
+            dispatch(
+                updateTask({
+                    taskId: taskParamsId,
+                    title,
+                    taskCoefficient,
+                    taskProgress,
+                    projectId,
+                    userId,
+                    taskPerformer,
+                    projectName,
+                })
+            )
+            const newProjectTask = [
+                ...projectsEntities[projectId]?.projectTasksId,
+                taskNanoId,
+            ]
+            const newProjectTaskEdited =
+                newProjectTask.indexOf(taskNanoId) === -1
+                    ? newProjectTask.push(taskNanoId)
+                    : undefined
+            await dispatch(
+                addTaskIdToProject({
+                    projectId,
+                    projectTasksId: newProjectTaskEdited,
+                })
+            )
+        } else {
+            // add new task
+            await dispatch(
+                addNewTask({
+                    id: taskNanoId,
+                    title,
+                    taskCoefficient,
+                    taskProgress,
+                    projectId,
+                    userId,
+                    taskPerformer,
+                    projectName,
+                })
+            )
+            if (projectId) {
+                const newProjectTask = [
+                    ...projectsEntities[projectId]?.projectTasksId,
+                    taskNanoId,
+                ]
+                await dispatch(
+                    addTaskIdToProject({
+                        projectId,
+                        projectTasksId: newProjectTask,
+                        newTaskId: taskNanoId,
+                    })
+                )
+            }
+        }
+        // console.log(newProjectTask)
         setLoading(false)
+        navigate('/tasks')
     }
 
     const handleUserId = (e) => {
@@ -136,7 +199,7 @@ const AddTask = () => {
 
     return (
         <div className="addTask">
-            <Title title="افزودن وظیفه جدید" />
+            <Title title={pageTitle} />
             <div className="addTaskWrapper">
                 <form>
                     <div className="formItemLogin">
@@ -150,40 +213,6 @@ const AddTask = () => {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                         />
-                    </div>
-                    <div className="formItemLogin">
-                        <label>تاریخ شروع: </label>
-                        <LocalizationProvider dateAdapter={AdapterJalali}>
-                            <DatePicker
-                                mask="____/__/__"
-                                value={taskStart}
-                                onChange={(newValue) => setTaskStart(newValue)}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        className="loginField"
-                                    />
-                                )}
-                                size="small"
-                            />
-                        </LocalizationProvider>
-                    </div>
-                    <div className="formItemLogin">
-                        <label>تاریخ پایان: </label>
-                        <LocalizationProvider dateAdapter={AdapterJalali}>
-                            <DatePicker
-                                mask="____/__/__"
-                                value={taskFinish}
-                                onChange={(newValue) => setTaskFinish(newValue)}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        className="loginField"
-                                    />
-                                )}
-                                size="small"
-                            />
-                        </LocalizationProvider>
                     </div>
                     <div className="formItemLogin">
                         <label>ضریب: </label>

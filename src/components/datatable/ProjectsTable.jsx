@@ -3,7 +3,11 @@ import { DataGrid } from '@mui/x-data-grid'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { deleteProject, selectProjects } from '../../redux/projectsSlice'
+import {
+    deleteProject,
+    fetchProjects,
+    selectProjects,
+} from '../../redux/projectsSlice'
 import AlertDialog from '../dialog/Dialog'
 
 const ProjectsTable = () => {
@@ -12,26 +16,54 @@ const ProjectsTable = () => {
     const projectsData = useSelector(selectProjects)
     const userRows = Object.values(projectsData)
 
+    const taskStatus = useSelector((state) => state.tasks.status)
+
     const handleDeleteProject = async () => {
         const id = window.location.hash.substring(1)
         await dispatch(deleteProject(id))
-        window.location.reload(false)
+        setDialogStatus(false)
     }
 
     const userColumns = [
         { field: 'range', headerName: 'ردیف', width: 70 },
-        { field: 'title', headerName: 'اسم پروژه', width: 150 },
-        { field: 'projectStart', headerName: 'تاریخ شروع پروژه', width: 150 },
-        { field: 'projectFinish', headerName: 'تاریخ پایان پروژه', width: 150 },
+        { field: 'title', headerName: 'اسم', width: 150 },
+        {
+            field: 'projectStart',
+            headerName: 'تاریخ شروع',
+            width: 150,
+            renderCell: (params) => {
+                return (
+                    <span>
+                        {new Date(params.row.projectStart).toLocaleDateString(
+                            'fa-IR'
+                        )}
+                    </span>
+                )
+            },
+        },
+        {
+            field: 'projectFinish',
+            headerName: 'تاریخ پایان',
+            width: 150,
+            renderCell: (params) => {
+                return (
+                    <span>
+                        {new Date(params.row.projectFinish).toLocaleDateString(
+                            'fa-IR'
+                        )}
+                    </span>
+                )
+            },
+        },
         {
             field: 'numberOfWorker',
-            headerName: 'تعداد کارمندان پروژه',
+            headerName: 'تعداد کارمندان',
             width: 150,
             renderCell: (params) => {
                 return <span>{params.row.projectWorkersId.length}</span>
             },
         },
-        { field: 'projectProgress', headerName: 'پیشرفت پروژه', width: 150 },
+        { field: 'projectProgress', headerName: 'درصد پیشرفت', width: 150 },
         {
             field: 'action',
             headerName: 'عملیات',

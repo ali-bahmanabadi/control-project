@@ -22,3 +22,7 @@ body {
     direction: rtl;
     font-family: IRANSans;
 }
+
+a {
+    text-decoration: none;
+}

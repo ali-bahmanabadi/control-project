@@ -65,14 +65,14 @@ const Sidebar = () => {
                             <ListItemText primary="وظایف" />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem disablePadding>
+                    {/* <ListItem disablePadding>
                         <ListItemButton onClick={() => navigate('/profile')}>
                             <ListItemIcon>
                                 <PersonRounded />
                             </ListItemIcon>
                             <ListItemText primary="پروفایل" />
                         </ListItemButton>
-                    </ListItem>
+                    </ListItem> */}
                     <ListItem disablePadding>
                         <ListItemButton onClick={handleClickOpenDialog}>
                             <ListItemIcon>

@@ -30,16 +30,10 @@ const TasksTable = () => {
     const userRows = Object.values(allTasks)
 
     const [data, setData] = useState(userRows)
-    const handleDelete = (id) => {
-        setData(data.filter((item) => item.id !== id))
-    }
 
     const handleDeleteTask = async () => {
         const taskId = window.location.hash.substring(1)
-        if (taskId) {
-            await dispatch(deleteTask(taskId))
-            window.location.reload(false)
-        }
+        await dispatch(deleteTask(taskId))
         setDialogStatus(false)
     }
 
@@ -50,8 +44,6 @@ const TasksTable = () => {
         { field: 'projectName', headerName: 'پروژه مربوطه', width: 140 },
         { field: 'taskCoefficient', headerName: 'ضریب', width: 140 },
         { field: 'taskProgress', headerName: 'درصد پیشرفت', width: 140 },
-        { field: 'taskStart', headerName: 'تاریخ شروع', width: 140 },
-        { field: 'taskFinish', headerName: 'تاریخ پایان', width: 140 },
         {
             field: 'action',
             headerName: 'عملیات',
@@ -84,14 +76,16 @@ const TasksTable = () => {
 
     return (
         <div className="datatable">
-            {}
-            <DataGrid
-                className="datagrid"
-                rows={userRows}
-                columns={userColumns}
-                pageSize={8}
-                rowsPerPageOptions={[8]}
-            />
+            {taskStatus === 'loading' && <div>درحال دریافت اطلاعات!</div>}
+            {taskStatus === 'success' && (
+                <DataGrid
+                    className="datagrid"
+                    rows={userRows}
+                    columns={userColumns}
+                    pageSize={8}
+                    rowsPerPageOptions={[8]}
+                />
+            )}
         </div>
     )
 }

@@ -75,4 +75,12 @@
       cursor: pointer;
     }
   }
+  .profileCell {
+    display: flex;
+    align-items: center;
+
+    .profile {
+      margin-left: 10px;
+    }
+  }
 }

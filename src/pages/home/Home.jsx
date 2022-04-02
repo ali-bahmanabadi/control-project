@@ -21,63 +21,75 @@ const Home = () => {
             <div className="homeContainer">
                 <Navbar />
                 <div className="main">
-                    <Routes>
-                        <Route path="/">
-                            <Route index element={<Dashboard />} />
-                            {/* project page  */}
-                            <Route path="projects">
-                                <Route index element={<Projects />} />
-                                <Route
-                                    path="add-project"
-                                    element={
-                                        <AddProject pageTitle="افزورن پروژه جدید" />
-                                    }
-                                />
-                                <Route
-                                    path="edit-project/:projectId"
-                                    element={
-                                        <AddProject pageTitle="ویرایش پروژه" />
-                                    }
-                                />
+                    <div className="container">
+                        <Routes>
+                            <Route path="/">
+                                <Route index element={<Dashboard />} />
+                                {/* project page  */}
+                                <Route path="projects">
+                                    <Route index element={<Projects />} />
+                                    <Route
+                                        path="add-project"
+                                        element={
+                                            <AddProject pageTitle="افزورن پروژه جدید" />
+                                        }
+                                    />
+                                    <Route
+                                        path="edit-project/:projectId"
+                                        element={
+                                            <AddProject pageTitle="ویرایش پروژه" />
+                                        }
+                                    />
+                                </Route>
+                                {/* user page  */}
+                                <Route path="users">
+                                    <Route index element={<Users />} />
+                                    <Route
+                                        path="add-user"
+                                        element={
+                                            <AddUser title="افزودن کاربر جدید" />
+                                        }
+                                    />
+                                    <Route
+                                        path=":userId"
+                                        element={<Profile />}
+                                    />
+                                    <Route
+                                        path="edit-user/:userId"
+                                        element={
+                                            <AddUser title="ویرایش اطلاعات کاربر" />
+                                        }
+                                    />
+                                </Route>
+                                {/* profile page  */}
+                                <Route path="profile">
+                                    <Route index element={<Profile />} />
+                                    <Route
+                                        path="edit-profile"
+                                        element={
+                                            <AddUser title="ویرایش اطلاعات کاربر" />
+                                        }
+                                    />
+                                </Route>
+                                {/* task page  */}
+                                <Route path="tasks">
+                                    <Route index element={<Tasks />} />
+                                    <Route
+                                        path="add-task"
+                                        element={
+                                            <AddTask pageTitle="افزودن وظیفه جدید" />
+                                        }
+                                    />
+                                    <Route
+                                        path="edit-task/:taskId"
+                                        element={
+                                            <AddTask pageTitle="ویرایش وظیفه" />
+                                        }
+                                    />
+                                </Route>
                             </Route>
-                            {/* user page  */}
-                            <Route path="users">
-                                <Route index element={<Users />} />
-                                <Route
-                                    path="add-user"
-                                    element={
-                                        <AddUser title="افزودن کاربر جدید" />
-                                    }
-                                />
-                                <Route path=":userId" element={<Profile />} />
-                                <Route
-                                    path="edit-user/:userId"
-                                    element={
-                                        <AddUser title="ویرایش اطلاعات کاربر" />
-                                    }
-                                />
-                            </Route>
-                            {/* profile page  */}
-                            <Route path="profile">
-                                <Route index element={<Profile />} />
-                                <Route
-                                    path="edit-profile"
-                                    element={
-                                        <AddUser title="ویرایش اطلاعات کاربر" />
-                                    }
-                                />
-                            </Route>
-                            {/* task page  */}
-                            <Route path="tasks">
-                                <Route index element={<Tasks />} />
-                                <Route path="add-task" element={<AddTask />} />
-                                <Route
-                                    path="edit-task/:taskId"
-                                    element={<AddTask />}
-                                />
-                            </Route>
-                        </Route>
-                    </Routes>
+                        </Routes>
+                    </div>
                 </div>
             </div>
         </div>

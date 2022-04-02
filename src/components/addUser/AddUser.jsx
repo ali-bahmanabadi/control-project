@@ -19,12 +19,14 @@ import {
     updateUser,
 } from '../../redux/usersSlice'
 import { useNavigate, useParams } from 'react-router-dom'
+import { nanoid } from '@reduxjs/toolkit'
 
 const Input = styled('input')({
     display: 'none',
 })
 
 const AddUser = ({ title }) => {
+    const navigate = useNavigate()
     const { userId } = useParams()
     const dispatch = useDispatch()
     const statusProject = useSelector((state) => state.projects.status)
@@ -43,10 +45,10 @@ const AddUser = ({ title }) => {
             dispatch(fetchUsers())
         }
         if (editUser) {
-            setName(editUser.name)
-            setLastName(editUser.lastName)
-            setKodmelli(editUser.kodmelli)
-            setPhone(editUser?.phone)
+            setName(editUser.name || '')
+            setLastName(editUser.lastName || '')
+            setKodmelli(editUser.kodmelli || '')
+            setPhone(editUser?.phone || '')
             setBirthday(editUser?.birthday)
         }
     }, [dispatch, editUser, statusProject, statusUser])
@@ -70,6 +72,7 @@ const AddUser = ({ title }) => {
             // save new user
             await dispatch(
                 addNewUser({
+                    id: nanoid(),
                     name,
                     lastName,
                     kodmelli,
@@ -80,6 +83,7 @@ const AddUser = ({ title }) => {
         }
 
         setLoading(false)
+        navigate('/users')
     }
 
     return (
