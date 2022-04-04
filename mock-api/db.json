@@ -88,6 +88,11 @@
     ],
     "login": {
         "position": "",
-        "userId": ""
+        "userId": "",
+        "name": "",
+        "lastName": "",
+        "kodmelli": "",
+        "birthday": "",
+        "phone": ""
     }
 }

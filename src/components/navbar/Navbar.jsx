@@ -1,23 +1,37 @@
-import React, { useContext, useState } from 'react'
-import './navbar.scss'
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
-import FullscreenExitOutlinedIcon from '@mui/icons-material/FullscreenExitOutlined'
-import { DarkModeContext } from '../../context/darkModeContext'
-import {
-    Logout,
-    LightMode,
-    Fullscreen,
-    NightlightOutlined,
-    Diamond,
-} from '@mui/icons-material'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import FullscreenExitOutlinedIcon from '@mui/icons-material/FullscreenExitOutlined'
+import { Logout, Fullscreen, Diamond } from '@mui/icons-material'
 import Dialog from '../dialog/Dialog'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchLogin } from '../../redux/loginSlice'
+import { fetchUsers, selectUserById } from '../../redux/usersSlice'
+import './navbar.scss'
 
 const Navbar = () => {
+    const dispatchRedux = useDispatch()
     const navigate = useNavigate()
-    const { darkMode, dispatch } = useContext(DarkModeContext)
+
+    // login store
+    const loginStatus = useSelector((state) => state.login.status)
+    const loginData = useSelector((state) => state.login.data)
+
+    // user store
+    const usersStatus = useSelector((state) => state.users.status)
+    const userById = useSelector((state) =>
+        selectUserById(state, loginData?.userId)
+    )
+
     const [fullScreenStatus, setFullScreenStatus] = useState(false)
-    // const [openDialogAlert, setOpenDialogAlert] = useState(false)
+
+    useEffect(() => {
+        if (loginStatus === 'idle') {
+            dispatchRedux(fetchLogin())
+        }
+        if (loginData && usersStatus === 'idle' && loginData.userId != null) {
+            dispatchRedux(fetchUsers())
+        }
+    }, [dispatchRedux, loginData, loginStatus, usersStatus])
 
     const handleFullScreen = () => {
         var elem = document.documentElement
@@ -53,6 +67,24 @@ const Navbar = () => {
         setOpenDialog(false)
     }
 
+    // set username
+    let username
+    if (loginData && loginData.position && loginData.position === 'admin') {
+        username =
+            loginData.name || loginData.lastName
+                ? loginData.name + ' ' + loginData.lastName
+                : 'مدیریت'
+    } else if (
+        loginData &&
+        loginData.position &&
+        loginData.position === 'user'
+    ) {
+        username =
+            userById && (userById.name || userById.lastName)
+                ? userById.name + ' ' + userById.lastName
+                : 'کاربر'
+    }
+
     return (
         <div className="navbar">
             <div className="wrapper">
@@ -60,24 +92,8 @@ const Navbar = () => {
                     <Diamond />
                     <span>مدیریت پروژه</span>
                 </div>
-                <div className="search">
-                    <input type="text" placeholder="Search..." />
-                    <SearchOutlinedIcon />
-                </div>
                 <div className="items">
-                    <div className="item">
-                        {darkMode ? (
-                            <LightMode
-                                className="icon"
-                                onClick={() => dispatch({ type: 'TOGGLE' })}
-                            />
-                        ) : (
-                            <NightlightOutlined
-                                className="icon"
-                                onClick={() => dispatch({ type: 'TOGGLE' })}
-                            />
-                        )}
-                    </div>
+                    <div className="item"></div>
                     <div className="item">
                         {!fullScreenStatus ? (
                             <Fullscreen
@@ -105,31 +121,8 @@ const Navbar = () => {
                             description="با این کار از برنامه خارج شده و به صفحه ' LOGIN ' هدایت می
                     شوید."
                         />
-                        {/* <Dialog
-                            open={openDialog}
-                            keepMounted
-                            onClose={handleClose}
-                            aria-describedby="alert-dialog-slide-description"
-                        >
-                            <DialogTitle>
-                                {"Use Google's location service?"}
-                            </DialogTitle>
-                            <DialogContent>
-                                <DialogContentText id="alert-dialog-slide-description">
-                                    Let Google help apps determine location.
-                                    This means sending anonymous location data
-                                    to Google, even when no apps are running.
-                                </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button onClick={handleClose}>Disagree</Button>
-                                <Button onClick={() => navigate('/login')}>
-                                    Agree
-                                </Button>
-                            </DialogActions>
-                        </Dialog> */}
                     </div>
-                    <div className="item">username</div>
+                    <div className="item">{username}</div>
                     <div className="item">
                         <img
                             src="https://dkstatics-public.digikala.com/digikala-reviews/b40c184030004b42a20e9462b183fbb06cd1364a_1632644979.jpg?x-oss-process=image/quality,q_70"

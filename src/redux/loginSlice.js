@@ -13,8 +13,8 @@ export const setStatus = createAsyncThunk('login/setStatus', async (data) => {
 })
 
 const initialState = {
-    status: '',
-    userId: '',
+    status: 'idle',
+    data: null,
 }
 
 const loginSlice = createSlice({
@@ -27,15 +27,13 @@ const loginSlice = createSlice({
         },
         [fetchLogin.fulfilled]: (state, action) => {
             state.status = 'success'
-            state = action.payload
+            state.data = { ...state.data, ...action.payload }
         },
         [fetchLogin.rejected]: (state) => {
             state.status = 'error'
         },
         [setStatus.fulfilled]: (state, action) => {
-            const { status, userId } = action.payload
-            state.status = status
-            state.userId = userId
+            state.data = action.payload
         },
     },
 })

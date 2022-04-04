@@ -1,44 +1,41 @@
 import { useEffect, useState } from 'react'
-import { CameraAltRounded, LibraryAddRounded } from '@mui/icons-material'
-import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
-import { Button, MenuItem, Select, TextField } from '@mui/material'
-import AdapterJalali from '@date-io/date-fns-jalali'
-import './addUser.scss'
-import styled from '@emotion/styled'
-import Title from '../dashboardHeaderTitle/Title'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-    fetchProjects,
-    selectAllProjects,
-    selectProjects,
-} from '../../redux/projectsSlice'
+import { useNavigate, useParams } from 'react-router-dom'
+// router
 import {
     addNewUser,
     fetchUsers,
     selectUserById,
     updateUser,
 } from '../../redux/usersSlice'
-import { useNavigate, useParams } from 'react-router-dom'
 import { nanoid } from '@reduxjs/toolkit'
-
-const Input = styled('input')({
-    display: 'none',
-})
+import { useDispatch, useSelector } from 'react-redux'
+// mui
+import { CancelRounded, LibraryAddRounded } from '@mui/icons-material'
+import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
+import { Box, Button, TextField } from '@mui/material'
+import AdapterJalali from '@date-io/date-fns-jalali'
+import Title from '../dashboardHeaderTitle/Title'
+import './addUser.scss'
 
 const AddUser = ({ title }) => {
     const navigate = useNavigate()
     const { userId } = useParams()
     const dispatch = useDispatch()
-    const statusProject = useSelector((state) => state.projects.status)
-    const statusUser = useSelector((state) => state.users.status)
 
+    // projects store
+    const statusProject = useSelector((state) => state.projects.status)
+
+    // users store
+    const statusUser = useSelector((state) => state.users.status)
     const editUser = useSelector((state) => selectUserById(state, userId))
 
+    // local state
     const [name, setName] = useState('')
     const [lastName, setLastName] = useState('')
     const [kodmelli, setKodmelli] = useState('')
     const [phone, setPhone] = useState('')
     const [birthday, setBirthday] = useState(new Date())
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (statusUser === 'idle') {
@@ -53,12 +50,11 @@ const AddUser = ({ title }) => {
         }
     }, [dispatch, editUser, statusProject, statusUser])
 
-    const [loading, setLoading] = useState(false)
-    const sendUserDataHandler = async () => {
+    const sendUserDataHandler = () => {
         setLoading(true)
         if (userId) {
             // save edited user
-            await dispatch(
+            dispatch(
                 updateUser({
                     userId,
                     name,
@@ -70,7 +66,7 @@ const AddUser = ({ title }) => {
             )
         } else {
             // save new user
-            await dispatch(
+            dispatch(
                 addNewUser({
                     id: nanoid(),
                     name,
@@ -157,16 +153,26 @@ const AddUser = ({ title }) => {
                         />
                     </div>
                     <div className="formItemLogin">
-                        <LoadingButton
-                            variant="contained"
-                            startIcon={<LibraryAddRounded />}
+                        <Box p={2}>
+                            <LoadingButton
+                                variant="contained"
+                                startIcon={<LibraryAddRounded />}
+                                size="large"
+                                loadingPosition="start"
+                                onClick={sendUserDataHandler}
+                                loading={loading}
+                            >
+                                ذخیره اطلاعات
+                            </LoadingButton>
+                        </Box>
+                        <Button
                             size="large"
-                            loadingPosition="start"
-                            onClick={sendUserDataHandler}
-                            loading={loading}
+                            variant="outlined"
+                            startIcon={<CancelRounded />}
+                            onClick={() => navigate('/users')}
                         >
-                            ذخیره اطلاعات
-                        </LoadingButton>
+                            انصراف
+                        </Button>
                     </div>
                 </form>
             </div>

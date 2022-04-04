@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
-import './users.scss'
-import Title from '../dashboardHeaderTitle/Title'
-import UsersTable from '../datatable/UsersTable'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchUsers } from '../../redux/usersSlice'
+import Title from '../../../components/dashboardHeaderTitle/Title'
+import UsersTable from '../../../components/datatable/UsersTable'
+import { fetchUsers } from '../../../redux/usersSlice'
+import './users.scss'
 
 const Users = () => {
     const dispatch = useDispatch()

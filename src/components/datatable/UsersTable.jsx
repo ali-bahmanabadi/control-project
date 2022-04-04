@@ -1,36 +1,32 @@
+import { useEffect, useState } from 'react'
 import './datatable.scss'
 import { DataGrid } from '@mui/x-data-grid'
-// import { userRows } from '../../datatablesource'
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { deleteUser, fetchUsers, selectAllUsers } from '../../redux/usersSlice'
 import AlertDialog from '../dialog/Dialog'
-import { AccountCircle } from '@mui/icons-material'
+import { AccountCircle, DeleteRounded, EditRounded } from '@mui/icons-material'
+import { Button } from '@mui/material'
 
 const UsersTable = () => {
     const dispatch = useDispatch()
-    // const status = useSelector((state) => state.users.status)
-    const allProjects = useSelector(selectAllUsers)
 
-    const userRows = Object.values(allProjects)
+    const usersStatus = useSelector((state) => state.users.status)
+    const allUsers = useSelector(selectAllUsers)
+
+    const userRows = Object.values(allUsers)
 
     const [dialogStatus, setDialogStatus] = useState(false)
 
-    // const [data, setData] = useState(userRows)
-    // const handleDelete = (id) => {
-    //     setData(data.filter((item) => item.id !== id))
-    // }
-
-    // useEffect(() => {
-    //     if (status === 'idle') {
-    //         dispatch(fetchUsers())
-    //     }
-    // }, [dispatch, status])
+    useEffect(() => {
+        if (usersStatus === 'idle') {
+            dispatch(fetchUsers())
+        }
+    }, [dispatch, usersStatus])
 
     const handleDeleteUser = async () => {
         const userId = window.location.hash.substring(1)
-        await dispatch(deleteUser(userId))
+        dispatch(deleteUser(userId))
         setDialogStatus(false)
     }
 
@@ -47,10 +43,10 @@ const UsersTable = () => {
                         state={params.row}
                         style={{ color: 'inherit' }}
                     >
-                        <div className="profileCell">
+                        <span className="profileCell">
                             <AccountCircle style={{ marginLeft: '10px' }} />
                             <span>{params.row.name}</span>
-                        </div>
+                        </span>
                     </Link>
                 )
             },
@@ -80,14 +76,26 @@ const UsersTable = () => {
                 return (
                     <div className="cellAction">
                         <Link to={`/users/edit-user/${params.row.id}`}>
-                            <div className="viewButton">ویرایش</div>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<EditRounded />}
+                            >
+                                ویرایش
+                            </Button>
                         </Link>
                         <Link
                             to={`/users#${params.row.id}`}
-                            className="deleteButton"
                             onClick={() => setDialogStatus(true)}
                         >
-                            حذف
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                startIcon={<DeleteRounded />}
+                            >
+                                حذف
+                            </Button>
                         </Link>
                         <AlertDialog
                             open={dialogStatus}
@@ -104,14 +112,19 @@ const UsersTable = () => {
 
     return (
         <div className="datatable">
-            {}
-            <DataGrid
-                className="datagrid"
-                rows={userRows}
-                columns={userColumns}
-                pageSize={8}
-                rowsPerPageOptions={[8]}
-            />
+            {usersStatus === 'loading' && <div>درحال دریافت اطلاعات!</div>}
+            {usersStatus === 'success' && userRows && userRows.length === 0 && (
+                <div>در حال حاضر کاربری وجود ندارد!</div>
+            )}
+            {usersStatus === 'success' && userRows && userRows.length > 0 && (
+                <DataGrid
+                    className="datagrid"
+                    rows={userRows}
+                    columns={userColumns}
+                    pageSize={8}
+                    rowsPerPageOptions={[8]}
+                />
+            )}
         </div>
     )
 }

@@ -4,10 +4,10 @@ import {
     createEntityAdapter,
 } from '@reduxjs/toolkit'
 import axios from 'axios'
-import { client } from '../api/client'
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
-    return await client.get('http://localhost:5000/tasks')
+    const response = await axios.get('http://localhost:5000/tasks')
+    return response.data
 })
 
 export const addNewTask = createAsyncThunk(
@@ -38,6 +38,7 @@ export const {
     selectById: selectTaskById,
     selectIds: selectTaskIds,
     selectEntities: selectTasks,
+    selectAll: selectAllTask,
 } = tasksAdapter.getSelectors((state) => state.tasks)
 
 const initialState = tasksAdapter.getInitialState({

@@ -1,53 +1,53 @@
-import "./chart.scss";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+    XAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    BarChart,
+    YAxis,
+    Legend,
+    Bar,
+} from 'recharts'
+import './chart.scss'
 
-const data = [
-  { name: "January", Total: 1200 },
-  { name: "February", Total: 2100 },
-  { name: "March", Total: 800 },
-  { name: "April", Total: 1600 },
-  { name: "May", Total: 900 },
-  { name: "June", Total: 1700 },
-];
+const Chart = ({ title, data }) => {
+    console.log('data', data)
+    return (
+        <div className="chart">
+            <div className="title">{title}</div>
+            {data && data.length === 0 && (
+                <h1>وظیفه ای برای پروژه وجود ندارد!</h1>
+            )}
+            {data && data.length > 0 && (
+                <ResponsiveContainer width="100%">
+                    <BarChart
+                        width={200}
+                        height={100}
+                        data={data}
+                        margin={{
+                            top: 20,
+                            right: 30,
+                            left: 20,
+                            bottom: 5,
+                        }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="title" />
+                        <YAxis domain={[0, 100]} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar
+                            dataKey="taskProgress"
+                            stackId="a"
+                            fill="#c72f2f"
+                            maxBarSize={50}
+                            animationDuration={2000}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            )}
+        </div>
+    )
+}
 
-const Chart = ({ aspect, title }) => {
-  return (
-    <div className="chart">
-      <div className="title">{title}</div>
-      <ResponsiveContainer width="100%" aspect={aspect}>
-        <AreaChart
-          width={730}
-          height={250}
-          data={data}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-        >
-          <defs>
-            <linearGradient id="total" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <XAxis dataKey="name" stroke="gray" />
-          <CartesianGrid strokeDasharray="3 3" className="chartGrid" />
-          <Tooltip />
-          <Area
-            type="monotone"
-            dataKey="Total"
-            stroke="#8884d8"
-            fillOpacity={1}
-            fill="url(#total)"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-export default Chart;
+export default Chart

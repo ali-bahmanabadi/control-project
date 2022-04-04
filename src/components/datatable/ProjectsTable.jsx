@@ -1,26 +1,86 @@
-import './datatable.scss'
-import { DataGrid } from '@mui/x-data-grid'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+// redux 
 import { useDispatch, useSelector } from 'react-redux'
-import {
-    deleteProject,
-    fetchProjects,
-    selectProjects,
-} from '../../redux/projectsSlice'
+import { deleteProject, selectProjects } from '../../redux/projectsSlice'
+import { fetchTasks, selectAllTask } from '../../redux/tasksSlice'
+// mui 
+import { DataGrid } from '@mui/x-data-grid'
+import { Button } from '@mui/material'
+import { DeleteRounded, EditRounded } from '@mui/icons-material'
+// component
 import AlertDialog from '../dialog/Dialog'
+import './datatable.scss'
 
 const ProjectsTable = () => {
-    const [dialogStatus, setDialogStatus] = useState(false)
     const dispatch = useDispatch()
-    const projectsData = useSelector(selectProjects)
-    const userRows = Object.values(projectsData)
 
+    // local state
+    const [dialogStatus, setDialogStatus] = useState(false)
+
+    // task store
     const taskStatus = useSelector((state) => state.tasks.status)
+    const allTask = useSelector(selectAllTask)
 
-    const handleDeleteProject = async () => {
+    // project store
+    const projectsData = useSelector(selectProjects)
+    const projectStatus = useSelector((state) => state.projects.status)
+
+    // Calculate the percentage of project progress
+    // ----------------------------------------------------------
+
+    const projectDataClone = JSON.parse(JSON.stringify(projectsData))
+
+    const finalData = {}
+
+    if (projectStatus === 'success' && taskStatus === 'success') {
+        for (const key in projectsData) {
+            finalData[key] = []
+        }
+
+        allTask.forEach((task) => {
+            if (finalData[task.projectId] !== undefined) {
+                finalData[task.projectId].push(task)
+            }
+        })
+
+        for (const key in finalData) {
+            if (finalData[key].length > 0) {
+                const coefficient = []
+                const progress = []
+                finalData[key].forEach((task) => {
+                    console.log(task)
+                    progress.push(+(task.taskProgress * task.taskCoefficient))
+                    coefficient.push(+task.taskCoefficient)
+                })
+                console.log(coefficient)
+                console.log(progress)
+                const coefficientTotal = coefficient.reduce((a, b) => a + b, 0)
+                const progressTotal = progress.reduce((a, b) => a + b, 0)
+                const finalProgress = (
+                    progressTotal / coefficientTotal
+                )?.toFixed(1)
+                console.log(finalProgress)
+
+                projectDataClone[key].projectProgress = finalProgress
+                console.log('final', projectDataClone)
+            }
+        }
+    }
+
+    // =================================================
+
+    const userRows = Object.values(projectDataClone)
+
+    useEffect(() => {
+        if (taskStatus === 'idle') {
+            dispatch(fetchTasks())
+        }
+    }, [dispatch, taskStatus])
+
+    const handleDeleteProject = () => {
         const id = window.location.hash.substring(1)
-        await dispatch(deleteProject(id))
+        dispatch(deleteProject(id))
         setDialogStatus(false)
     }
 
@@ -63,11 +123,18 @@ const ProjectsTable = () => {
                 return <span>{params.row.projectWorkersId.length}</span>
             },
         },
-        { field: 'projectProgress', headerName: 'درصد پیشرفت', width: 150 },
+        {
+            field: 'projectProgress',
+            headerName: 'درصد پیشرفت',
+            width: 150,
+            renderCell: (params) => {
+                return <span>{params.row.projectProgress}%</span>
+            },
+        },
         {
             field: 'action',
             headerName: 'عملیات',
-            width: 200,
+            width: 250,
             renderCell: (params) => {
                 return (
                     <div className="cellAction">
@@ -75,22 +142,27 @@ const ProjectsTable = () => {
                             to={`/projects/edit-project/${params.row.id}`}
                             style={{ textDecoration: 'none' }}
                         >
-                            <div className="viewButton">ویرایش</div>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<EditRounded />}
+                            >
+                                ویرایش
+                            </Button>
                         </Link>
                         <Link
                             to={`/projects#${params.row.id}`}
-                            className="deleteButton"
                             onClick={() => setDialogStatus(true)}
                         >
-                            حذف
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                startIcon={<DeleteRounded />}
+                            >
+                                حذف
+                            </Button>
                         </Link>
-                        <AlertDialog
-                            open={dialogStatus}
-                            handleClose={() => setDialogStatus(false)}
-                            handleCloseNavigate={() => handleDeleteProject()}
-                            title={`ایا میخواهید پروژه را حذف کنید؟`}
-                            description="با این کار پروژه کامل حذف شده و قابل بازگردانی نیست !"
-                        />
                     </div>
                 )
             },
@@ -99,12 +171,26 @@ const ProjectsTable = () => {
 
     return (
         <div className="datatable">
-            <DataGrid
-                className="datagrid"
-                rows={userRows}
-                columns={userColumns}
-                pageSize={8}
-                rowsPerPageOptions={[8]}
+            {projectStatus === 'success' &&
+                userRows &&
+                userRows.length === 0 && (
+                    <div>در حال حاضر پروژه ای وجود ندارد!</div>
+                )}
+            {projectStatus === 'success' && userRows && userRows.length > 0 && (
+                <DataGrid
+                    className="datagrid"
+                    rows={userRows}
+                    columns={userColumns}
+                    pageSize={8}
+                    rowsPerPageOptions={[8]}
+                />
+            )}
+            <AlertDialog
+                open={dialogStatus}
+                handleClose={() => setDialogStatus(false)}
+                handleCloseNavigate={() => handleDeleteProject()}
+                title={`آیا میخواهید پروژه را حذف کنید؟`}
+                description="با این کار پروژه کامل حذف شده و قابل بازگردانی نیست !"
             />
         </div>
     )

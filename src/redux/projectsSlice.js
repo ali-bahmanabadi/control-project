@@ -4,7 +4,6 @@ import {
     createEntityAdapter,
 } from '@reduxjs/toolkit'
 import axios from 'axios'
-import { client } from '../api/client'
 
 export const fetchProjects = createAsyncThunk(
     'projects/fetchProjects',

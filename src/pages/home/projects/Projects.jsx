@@ -1,9 +1,9 @@
-import './projects.scss'
-import Title from '../dashboardHeaderTitle/Title'
-import ProjectsTable from '../datatable/ProjectsTable'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchProjects } from '../../redux/projectsSlice'
 import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchProjects } from '../../../redux/projectsSlice'
+import Title from '../../../components/dashboardHeaderTitle/Title'
+import ProjectsTable from '../../../components/datatable/ProjectsTable'
+import './projects.scss'
 
 const Projects = () => {
     const dispatch = useDispatch()

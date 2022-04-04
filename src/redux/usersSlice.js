@@ -4,10 +4,10 @@ import {
     createSlice,
 } from '@reduxjs/toolkit'
 import axios from 'axios'
-import { client } from '../api/client'
 
 export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
-    return await client.get('http://localhost:5000/users')
+    const Response = await axios.get('http://localhost:5000/users')
+    return Response.data
 })
 
 export const deleteUser = createAsyncThunk(
@@ -35,6 +35,7 @@ export const {
     selectAll: selectAllUsers,
     selectEntities: selectUsersEntities,
     selectById: selectUserById,
+    selectIds: selectUsersIds,
 } = usersAdapter.getSelectors((state) => state.users)
 
 const initialState = usersAdapter.getInitialState({
@@ -50,7 +51,6 @@ const usersSlice = createSlice({
             state.status = 'loading'
         },
         [fetchUsers.fulfilled]: (state, action) => {
-            // state.entities = action.payload
             usersAdapter.upsertMany(state, action.payload)
             state.status = 'success'
         },

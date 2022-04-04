@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchUsers, selectUsersEntities } from '../../redux/usersSlice'
-import { LibraryAddRounded } from '@mui/icons-material'
+import { CancelRounded, LibraryAddRounded } from '@mui/icons-material'
 import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
 import {
+    Button,
     Checkbox,
     ListItemText,
     MenuItem,
@@ -19,6 +20,7 @@ import {
 } from '../../redux/projectsSlice'
 import { useNavigate, useParams } from 'react-router-dom'
 import { nanoid } from '@reduxjs/toolkit'
+import { Box } from '@mui/system'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -32,9 +34,9 @@ const MenuProps = {
 }
 
 const AddProject = ({ pageTitle }) => {
+    const dispatch = useDispatch()
     const navigate = useNavigate()
     const { projectId } = useParams()
-    const dispatch = useDispatch()
 
     // users store
     const usersStatus = useSelector((state) => state.users.status)
@@ -65,11 +67,11 @@ const AddProject = ({ pageTitle }) => {
         }
     }, [dispatch, usersStatus])
 
-    const sendNewProjectDataHandler = async () => {
+    const sendNewProjectDataHandler = () => {
         setStatus('pending')
         // save edited project
         if (projectId) {
-            await dispatch(
+            dispatch(
                 updateProject({
                     projectId,
                     title,
@@ -80,7 +82,7 @@ const AddProject = ({ pageTitle }) => {
             )
         } else {
             // save new project
-            await dispatch(
+            dispatch(
                 addNewProject({
                     id: nanoid(),
                     title,
@@ -107,10 +109,7 @@ const AddProject = ({ pageTitle }) => {
     }
 
     const canSave = () => {
-        return (
-            [title].every(Boolean) && status === 'idle'
-            // && projectWorkersId.length > 0
-        )
+        return [title].every(Boolean) && status === 'idle'
     }
 
     return (
@@ -185,7 +184,7 @@ const AddProject = ({ pageTitle }) => {
                                 selected
                                     .map(
                                         (userId) =>
-                                            users[+userId]?.name +
+                                            users[userId]?.name +
                                             ' ' +
                                             users[userId]?.lastName
                                     )
@@ -204,7 +203,7 @@ const AddProject = ({ pageTitle }) => {
                                     />
                                     <ListItemText
                                         primary={
-                                            users[+userId]?.name +
+                                            users[userId]?.name +
                                             ' ' +
                                             users[userId]?.lastName
                                         }
@@ -214,17 +213,27 @@ const AddProject = ({ pageTitle }) => {
                         </Select>
                     </div>
                     <div className="formItemLogin">
-                        <LoadingButton
-                            variant="contained"
-                            startIcon={<LibraryAddRounded />}
+                        <Box p={2}>
+                            <LoadingButton
+                                variant="contained"
+                                startIcon={<LibraryAddRounded />}
+                                size="large"
+                                loadingPosition="start"
+                                onClick={sendNewProjectDataHandler}
+                                loading={status === 'pending'}
+                                disabled={!canSave()}
+                            >
+                                ذخیره اطلاعات
+                            </LoadingButton>
+                        </Box>
+                        <Button
                             size="large"
-                            loadingPosition="start"
-                            onClick={sendNewProjectDataHandler}
-                            loading={status === 'pending'}
-                            disabled={!canSave()}
+                            variant="outlined"
+                            startIcon={<CancelRounded />}
+                            onClick={() => navigate('/projects')}
                         >
-                            ذخیره اطلاعات
-                        </LoadingButton>
+                            انصراف
+                        </Button>
                     </div>
                 </form>
             </div>

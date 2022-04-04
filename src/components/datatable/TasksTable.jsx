@@ -1,13 +1,13 @@
-import './datatable.scss'
-import { DataGrid } from '@mui/x-data-grid'
-// import { userRows } from '../../datatablesource'
-import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { deleteTask, fetchTasks, selectTasks } from '../../redux/tasksSlice'
+import { deleteTask, fetchTasks, selectAllTask } from '../../redux/tasksSlice'
+import { fetchLogin } from '../../redux/loginSlice'
 import AlertDialog from '../dialog/Dialog'
-
-// import store from '../../redux/store'
+import { DataGrid } from '@mui/x-data-grid'
+import { Button } from '@mui/material'
+import { DeleteRounded, EditRounded } from '@mui/icons-material'
+import './datatable.scss'
 
 const TasksTable = () => {
     const dispatch = useDispatch()
@@ -16,20 +16,37 @@ const TasksTable = () => {
 
     // task store
     const taskStatus = useSelector((state) => state.tasks.status)
+    const allTasks = useSelector(selectAllTask)
+
+    // login store
+    const loginStatus = useSelector((state) => state.login.status)
+    const loginData = useSelector((state) => state.login.data)
 
     useEffect(() => {
         if (taskStatus === 'idle') {
             dispatch(fetchTasks())
         }
-    }, [dispatch, taskStatus])
+        if (loginStatus === 'idle') {
+            dispatch(fetchLogin())
+        }
+    }, [dispatch, loginStatus, taskStatus])
 
     // -------------------------------------
 
-    const allTasks = useSelector(selectTasks)
+    const userRows = [...allTasks]
 
-    const userRows = Object.values(allTasks)
+    let taskForRender = userRows
+    if (
+        taskStatus === 'success' &&
+        loginStatus === 'success' &&
+        loginData.userId !== ''
+    ) {
+        taskForRender = userRows.filter(
+            (task) => task.userId === loginData.userId
+        )
+    }
 
-    const [data, setData] = useState(userRows)
+    // console.log(typeof loginData.userId)
 
     const handleDeleteTask = async () => {
         const taskId = window.location.hash.substring(1)
@@ -43,7 +60,14 @@ const TasksTable = () => {
         { field: 'taskPerformer', headerName: 'انجام دهنده', width: 140 },
         { field: 'projectName', headerName: 'پروژه مربوطه', width: 140 },
         { field: 'taskCoefficient', headerName: 'ضریب', width: 140 },
-        { field: 'taskProgress', headerName: 'درصد پیشرفت', width: 140 },
+        {
+            field: 'taskProgress',
+            headerName: 'درصد پیشرفت',
+            width: 140,
+            renderCell: (params) => {
+                return <span>{params.row.taskProgress}%</span>
+            },
+        },
         {
             field: 'action',
             headerName: 'عملیات',
@@ -52,22 +76,31 @@ const TasksTable = () => {
                 return (
                     <div className="cellAction">
                         <Link to={`/tasks/edit-task/${params.row.id}`}>
-                            <div className="viewButton">ویرایش</div>
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<EditRounded />}
+                            >
+                                ویرایش
+                            </Button>
                         </Link>
-                        <Link
-                            to={`/tasks#${params.row.id}`}
-                            className="deleteButton"
-                            onClick={() => setDialogStatus(true)}
-                        >
-                            حذف
-                        </Link>
-                        <AlertDialog
-                            open={dialogStatus}
-                            handleClose={() => setDialogStatus(false)}
-                            handleCloseNavigate={handleDeleteTask}
-                            title={`ایا میخواهید وظیفه را حذف کنید؟`}
-                            description="با این کار وظیفه کامل حذف شده و قابل بازگردانی نیست !"
-                        />
+                        {loginData &&
+                            loginData.position &&
+                            loginData.position === 'admin' && (
+                                <Link
+                                    to={`/tasks#${params.row.id}`}
+                                    onClick={() => setDialogStatus(true)}
+                                >
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        size="small"
+                                        startIcon={<DeleteRounded />}
+                                    >
+                                        حذف
+                                    </Button>
+                                </Link>
+                            )}
                     </div>
                 )
             },
@@ -77,15 +110,29 @@ const TasksTable = () => {
     return (
         <div className="datatable">
             {taskStatus === 'loading' && <div>درحال دریافت اطلاعات!</div>}
-            {taskStatus === 'success' && (
-                <DataGrid
-                    className="datagrid"
-                    rows={userRows}
-                    columns={userColumns}
-                    pageSize={8}
-                    rowsPerPageOptions={[8]}
-                />
-            )}
+            {taskStatus === 'success' &&
+                taskForRender &&
+                taskForRender.length === 0 && (
+                    <div>درحال حاضر وظیفه ای وجودندارد!</div>
+                )}
+            {taskStatus === 'success' &&
+                taskForRender &&
+                taskForRender.length !== 0 && (
+                    <DataGrid
+                        className="datagrid"
+                        rows={taskForRender}
+                        columns={userColumns}
+                        pageSize={8}
+                        rowsPerPageOptions={[8]}
+                    />
+                )}
+            <AlertDialog
+                open={dialogStatus}
+                handleClose={() => setDialogStatus(false)}
+                handleCloseNavigate={handleDeleteTask}
+                title={`آیا میخواهید وظیفه را حذف کنید؟`}
+                description="با این کار وظیفه کامل حذف شده و قابل بازگردانی نیست !"
+            />
         </div>
     )
 }

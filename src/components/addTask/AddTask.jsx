@@ -2,24 +2,18 @@ import { useEffect, useState } from 'react'
 // component
 import Title from '../dashboardHeaderTitle/Title'
 // material
-import { DatePicker, LoadingButton, LocalizationProvider } from '@mui/lab'
-import { MenuItem, Select, TextField } from '@mui/material'
-import AdapterJalali from '@date-io/date-fns-jalali'
-// css
-import './addTask.scss'
-import { LibraryAddRounded } from '@mui/icons-material'
+import { LoadingButton } from '@mui/lab'
+import { Box, Button, MenuItem, Select, TextField } from '@mui/material'
+import { CancelRounded, LibraryAddRounded } from '@mui/icons-material'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate, useParams } from 'react-router-dom'
+// redux
 import {
-    addTaskIdToProject,
     fetchProjects,
     selectAllProjects,
     selectProjects,
 } from '../../redux/projectsSlice'
-import {
-    fetchUsers,
-    selectAllUsers,
-    selectUsersEntities,
-} from '../../redux/usersSlice'
+import { fetchUsers, selectUsersEntities } from '../../redux/usersSlice'
 import {
     addNewTask,
     fetchTasks,
@@ -27,18 +21,9 @@ import {
     updateTask,
 } from '../../redux/tasksSlice'
 import { nanoid } from '@reduxjs/toolkit'
-import { useNavigate, useParams } from 'react-router-dom'
-
-const ITEM_HEIGHT = 48
-const ITEM_PADDING_TOP = 8
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 250,
-        },
-    },
-}
+import { fetchLogin } from '../../redux/loginSlice'
+// css
+import './addTask.scss'
 
 const AddTask = ({ pageTitle }) => {
     const dispatch = useDispatch()
@@ -52,7 +37,6 @@ const AddTask = ({ pageTitle }) => {
 
     // users store
     const usersStatus = useSelector((state) => state.users.status)
-    const allUsers = useSelector(selectAllUsers)
     const usersEntities = useSelector(selectUsersEntities)
 
     // task store
@@ -61,6 +45,10 @@ const AddTask = ({ pageTitle }) => {
         selectTaskById(state, taskParamsId)
     )
 
+    // login store
+    const loginStatus = useSelector((state) => state.login.status)
+    const loginData = useSelector((state) => state.login.data)
+
     // local state
     const [title, setTitle] = useState('')
     const [taskCoefficient, setTaskCoefficient] = useState(1)
@@ -68,6 +56,7 @@ const AddTask = ({ pageTitle }) => {
     const [projectId, setProjectId] = useState('')
     const [userId, setUserId] = useState('')
     const [taskPerformer, setTaskPerformer] = useState('')
+    const [loading, setLoading] = useState(false)
     const [projectName, setProjectName] = useState('')
 
     useEffect(() => {
@@ -103,7 +92,7 @@ const AddTask = ({ pageTitle }) => {
         console.log(usersForThisProject)
     }
 
-    // dispatch projects & data
+    // dispatch projects & data & login
     useEffect(() => {
         if (projectsStatus === 'idle') {
             dispatch(fetchProjects())
@@ -111,9 +100,10 @@ const AddTask = ({ pageTitle }) => {
         if (usersStatus === 'idle') {
             dispatch(fetchUsers())
         }
-    }, [dispatch, projectsStatus, usersStatus])
-
-    const [loading, setLoading] = useState(false)
+        if (loginStatus === 'idle') {
+            dispatch(fetchLogin())
+        }
+    }, [dispatch, loginStatus, projectsStatus, usersStatus])
 
     const sendTaskDataHandler = async () => {
         setLoading(true)
@@ -133,20 +123,6 @@ const AddTask = ({ pageTitle }) => {
                     projectName,
                 })
             )
-            const newProjectTask = [
-                ...projectsEntities[projectId]?.projectTasksId,
-                taskNanoId,
-            ]
-            const newProjectTaskEdited =
-                newProjectTask.indexOf(taskNanoId) === -1
-                    ? newProjectTask.push(taskNanoId)
-                    : undefined
-            await dispatch(
-                addTaskIdToProject({
-                    projectId,
-                    projectTasksId: newProjectTaskEdited,
-                })
-            )
         } else {
             // add new task
             await dispatch(
@@ -161,21 +137,7 @@ const AddTask = ({ pageTitle }) => {
                     projectName,
                 })
             )
-            if (projectId) {
-                const newProjectTask = [
-                    ...projectsEntities[projectId]?.projectTasksId,
-                    taskNanoId,
-                ]
-                await dispatch(
-                    addTaskIdToProject({
-                        projectId,
-                        projectTasksId: newProjectTask,
-                        newTaskId: taskNanoId,
-                    })
-                )
-            }
         }
-        // console.log(newProjectTask)
         setLoading(false)
         navigate('/tasks')
     }
@@ -197,6 +159,19 @@ const AddTask = ({ pageTitle }) => {
         console.log(projectTitle)
     }
 
+    // validate login user or admin
+    let readOnly
+    if (loginData && loginData.position && loginData.position === 'user') {
+        readOnly = {
+            readOnly: true,
+            // disableUnderline: true,
+        }
+    }
+    let selectDisable = false
+    if (loginData && loginData.position && loginData.position === 'user') {
+        selectDisable = true
+    }
+
     return (
         <div className="addTask">
             <Title title={pageTitle} />
@@ -212,6 +187,7 @@ const AddTask = ({ pageTitle }) => {
                             className="loginField"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
+                            InputProps={readOnly}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -225,6 +201,7 @@ const AddTask = ({ pageTitle }) => {
                             type="number"
                             value={taskCoefficient}
                             onChange={(e) => setTaskCoefficient(e.target.value)}
+                            InputProps={readOnly}
                         />
                     </div>
                     <div className="formItemLogin">
@@ -249,6 +226,7 @@ const AddTask = ({ pageTitle }) => {
                             value={projectId}
                             onChange={handleProjectId}
                             size="small"
+                            disabled={selectDisable}
                         >
                             {allProjects &&
                                 projectsStatus === 'success' &&
@@ -272,29 +250,39 @@ const AddTask = ({ pageTitle }) => {
                                 value={userId}
                                 onChange={handleUserId}
                                 size="small"
+                                disabled={selectDisable}
                             >
                                 {usersForThisProject &&
                                     usersForThisProject.length > 0 &&
                                     usersForThisProject.map((user) => (
-                                        <MenuItem
-                                            value={user.id}
-                                            key={user.id}
-                                        >{`${user.name} ${user.lastName}`}</MenuItem>
+                                        <MenuItem value={user.id} key={user.id}>
+                                            {`${user.name} ${user.lastName}`}
+                                        </MenuItem>
                                     ))}
                             </Select>
                         </div>
                     )}
                     <div className="formItemLogin">
-                        <LoadingButton
-                            variant="contained"
-                            startIcon={<LibraryAddRounded />}
+                        <Box p={2}>
+                            <LoadingButton
+                                variant="contained"
+                                startIcon={<LibraryAddRounded />}
+                                size="large"
+                                loadingPosition="start"
+                                onClick={sendTaskDataHandler}
+                                loading={loading}
+                            >
+                                ذخیره اطلاعات
+                            </LoadingButton>
+                        </Box>
+                        <Button
                             size="large"
-                            loadingPosition="start"
-                            onClick={sendTaskDataHandler}
-                            loading={loading}
+                            variant="outlined"
+                            startIcon={<CancelRounded />}
+                            onClick={() => navigate('/tasks')}
                         >
-                            ذخیره اطلاعات
-                        </LoadingButton>
+                            انصراف
+                        </Button>
                     </div>
                 </form>
             </div>
